@@ -64,7 +64,7 @@ logger = logging.getLogger("gyro.agent")
 MINIMAX_API_KEY = os.environ.get("MINIMAX_API_KEY", "sk-cp-ypfEn_bc2iumGQhRTyJjhRU1oSK6XMCLvv0Ow3ehAuP1K6rmetK_UO5vQPFSptVeWwTTftP77EyNA7FPMyXTgkTD2qjVwj-7ifRZz4pA5iksyAGpFEMYGfc")
 MINIMAX_MODEL = "MiniMax-M2.7"
 MINERU_TOKEN = os.environ.get("MINERU_TOKEN", "eyJ0eXBlIjoiSldUIiwiYWxnIjoiSFM1MTIifQ.eyJqdGkiOiIyODkwMDY0NiIsInJvbCI6IlJPTEVfUkVHSVNURVIiLCJpc3MiOiJPcGVuWExhYiIsImlhdCI6MTc3NDI1NjQ0MywiY2xpZW50SWQiOiJsa3pkeDU3bnZ5MjJqa3BxOXgydyIsInBob25lIjoiMTMyNjAxNjk4ODUiLCJvcGVuSWQiOm51bGwsInV1aWQiOiJmNTg5ZjE5NC1jYmFkLTQ5ZTUtYWQ4Zi04MmU0M2UyZWRhZDQiLCJlbWFpbCI6IiIsImV4cCI6MTc4MjAzMjQ0M30.DTzzcfCKsyadfeNy3mwoJ93V11mkPiOXE3sKlq8NYvfl2EWmngcmJbw5OGni0LegfNz7oETK30blEQt3nuupMg")
-APP_VERSION = "5.0"
+APP_VERSION = "5.1"
 BASE_DIR = Path("/root/MinerU_Track2_Agent")
 DATA_DIR = BASE_DIR / "data"
 DB_PATH = DATA_DIR / "knowledge.db"
@@ -1559,18 +1559,18 @@ async def api_agent_execute(req: Request):
     correlation_id_var.set(trace_id)
 
     if exec_req.mode == "react":
-        # 真正的ReAct循环
-        agent = ReActAgent(trace_id, exec_req.query, max_steps=5)
-        result = agent.run()
+        # ReAct循环改为异步执行，避免HTTP超时
+        with _async_results_lock:
+            _async_results[trace_id] = {"status": "running", "answer": "", "steps_executed": 0}
+        t = threading.Thread(target=_run_react_async,
+                             args=(trace_id, exec_req.query, 5), daemon=True)
+        t.start()
         return JSONResponse({
-            "result": result["answer"],
-            "trace_id": result["trace_id"],
-            "steps_executed": result["steps_executed"],
-            "elapsed_ms": result["elapsed_ms"],
-            "status": result["status"],
-            "mode": "react",
-            "steps": result["steps"],
-            "tools_used": list({s["tool"] for s in result["steps"]})
+            "trace_id": trace_id,
+            "status": "running",
+            "message": "ReAct任务已启动，请通过 /api/agent/result?trace_id={} 轮询结果".format(trace_id),
+            "poll_url": f"/api/agent/result?trace_id={trace_id}",
+            "mode": "react_async"
         })
     else:
         # 简单模式（兼容旧版）
