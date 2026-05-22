@@ -1,0 +1,19 @@
+[Unit]
+Description=INSRuler AI - 惯导智衡 Data Agent v5.0
+After=network.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/MinerU_Track2_Agent
+ExecStart=/usr/bin/python3 /root/MinerU_Track2_Agent/app.py
+Restart=always
+RestartSec=5
+StandardOutput=append:/root/MinerU_Track2_Agent/logs/app.log
+StandardError=append:/root/MinerU_Track2_Agent/logs/app.log
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
