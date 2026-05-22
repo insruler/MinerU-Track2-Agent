@@ -16,6 +16,7 @@ MinerU 2026大赛赛道二 · Data Agent
 - 错误自动恢复：指数退避重试，熔断器模式
 """
 
+import asyncio
 import sys, os, time, json, re, sqlite3, zipfile, io, threading, uuid, hashlib
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
@@ -1154,6 +1155,7 @@ def _batch_process(job_id: str):
 
 # ==================== MiniMax API ====================
 def call_minimax(prompt: str, system: str = "") -> str:
+    """同步版LLM调用（供线程/后台任务使用）"""
     headers = {"Authorization": f"Bearer {MINIMAX_API_KEY}", "Content-Type": "application/json"}
     messages = []
     if system:
@@ -1170,6 +1172,11 @@ def call_minimax(prompt: str, system: str = "") -> str:
         return data.get("choices", [{}])[0].get("message", {}).get("content", "无响应")
     except Exception as e:
         return f"API错误: {str(e)}"
+
+async def call_minimax_async(prompt: str, system: str = "") -> str:
+    """异步版LLM调用（供async路由使用，不阻塞事件循环）"""
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, call_minimax, prompt, system)
 
 
 # ==================== FastAPI ====================
@@ -1397,7 +1404,9 @@ async def api_qa(req: Request):
     log_agent_step(trace_id, query, 3, "LLM推理", "call_llm",
                    {"prompt_len": len(prompt), "rag_chunks": len(chunks)}, "calling", "running", 0)
     t_llm = time.time()
-    llm_result = tool_call_llm(prompt)
+    # 异步调用LLM，不阻塞事件循环
+    loop = asyncio.get_event_loop()
+    llm_result = await loop.run_in_executor(None, tool_call_llm, prompt)
     answer = llm_result.get("output", "")
     llm_ms = int((time.time()-t_llm)*1000)
     log_agent_step(trace_id, query, 3, "LLM推理", "call_llm",
@@ -1514,7 +1523,8 @@ async def api_agent_plan(req: Request):
 （执行过程中需要注意的问题）"""
 
         t_plan = time.time()
-        llm_result = tool_call_llm(cot_prompt)
+        loop = asyncio.get_event_loop()
+        llm_result = await loop.run_in_executor(None, tool_call_llm, cot_prompt)
         plan = llm_result.get("output", "")
         plan_ms = int((time.time()-t_plan)*1000)
 
@@ -1539,7 +1549,8 @@ async def api_agent_plan(req: Request):
         context_docs = "\n".join([f"- {d['title']}" for d in docs[:5]])
         context_ents = "、".join([e["name"] for e in entities[:10]])
         prompt = f"""为以下任务制定执行计划。\n任务: {plan_req.query}\n相关文档:\n{context_docs}\n相关实体: {context_ents}\n请输出Markdown格式执行计划。"""
-        llm_result = tool_call_llm(prompt)
+        loop = asyncio.get_event_loop()
+        llm_result = await loop.run_in_executor(None, tool_call_llm, prompt)
         plan = llm_result.get("output", "")
         total_ms = int((time.time()-t0)*1000)
         return JSONResponse({"plan": plan, "trace_id": trace_id,
@@ -1591,7 +1602,8 @@ async def api_agent_execute(req: Request):
         context = "\n".join([f"【{d['title']}】{d['snippet']}" for d in docs[:3]])
         rel_context = "\n".join([f"- {r['from']} --[{r['relation']}]--> {r['to']}" for r in relations[:10]])
         prompt = f"""完成以下任务并输出结果。\n任务: {exec_req.query}\n计划: {exec_req.plan}\n知识库: {context}\n关系图: {rel_context}\n系统: {stats.get('documents',0)}篇文档,{stats.get('entities',0)}实体\n请输出Markdown格式结果。"""
-        llm_result = tool_call_llm(prompt)
+        loop = asyncio.get_event_loop()
+        llm_result = await loop.run_in_executor(None, tool_call_llm, prompt)
         result_text = llm_result.get("output", "")
         total_ms = int((time.time()-t0)*1000)
         return JSONResponse({"result": result_text, "trace_id": trace_id,
