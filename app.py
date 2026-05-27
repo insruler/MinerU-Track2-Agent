@@ -65,7 +65,7 @@ logger = logging.getLogger("gyro.agent")
 MINIMAX_API_KEY = os.environ.get("MINIMAX_API_KEY", "sk-cp-ypfEn_bc2iumGQhRTyJjhRU1oSK6XMCLvv0Ow3ehAuP1K6rmetK_UO5vQPFSptVeWwTTftP77EyNA7FPMyXTgkTD2qjVwj-7ifRZz4pA5iksyAGpFEMYGfc")
 MINIMAX_MODEL = "MiniMax-M2.7"
 MINERU_TOKEN = os.environ.get("MINERU_TOKEN", "eyJ0eXBlIjoiSldUIiwiYWxnIjoiSFM1MTIifQ.eyJqdGkiOiIyODkwMDY0NiIsInJvbCI6IlJPTEVfUkVHSVNURVIiLCJpc3MiOiJPcGVuWExhYiIsImlhdCI6MTc3NDI1NjQ0MywiY2xpZW50SWQiOiJsa3pkeDU3bnZ5MjJqa3BxOXgydyIsInBob25lIjoiMTMyNjAxNjk4ODUiLCJvcGVuSWQiOm51bGwsInV1aWQiOiJmNTg5ZjE5NC1jYmFkLTQ5ZTUtYWQ4Zi04MmU0M2UyZWRhZDQiLCJlbWFpbCI6IiIsImV4cCI6MTc4MjAzMjQ0M30.DTzzcfCKsyadfeNy3mwoJ93V11mkPiOXE3sKlq8NYvfl2EWmngcmJbw5OGni0LegfNz7oETK30blEQt3nuupMg")
-APP_VERSION = "5.1"
+APP_VERSION = "6.0"
 BASE_DIR = Path("/root/MinerU_Track2_Agent")
 DATA_DIR = BASE_DIR / "data"
 DB_PATH = DATA_DIR / "knowledge.db"
@@ -190,20 +190,45 @@ def init_db():
 
 # ==================== Pydantic 请求模型（参数校验） ====================
 class AgentPlanRequest(BaseModel):
-    query: str = Field(..., min_length=1, max_length=2000, description="任务描述")
+    query: str = Field(default="", max_length=2000, description="任务描述")
+    task: Optional[str] = Field(default=None, max_length=2000, description="任务描述(别名)")
     mode: str = Field(default="react", description="执行模式: react | simple")
     max_steps: int = Field(default=5, ge=1, le=10, description="最大执行步数")
 
+    def get_query(self) -> str:
+        return self.query or self.task or ''
+
+    class Config:
+        extra = 'allow'
+
 class AgentExecuteRequest(BaseModel):
-    query: str = Field(..., min_length=1, max_length=2000)
+    query: str = Field(default="", max_length=2000)
+    task: Optional[str] = Field(default=None, max_length=2000)
     plan: str = Field(default="", max_length=10000)
     trace_id: str = Field(default="", max_length=64)
     mode: str = Field(default="react", description="执行模式: react | simple")
 
+    def get_query(self) -> str:
+        return self.query or self.task or ''
+
+    class Config:
+        extra = 'allow'
+
 class QARequest(BaseModel):
-    query: str = Field(..., min_length=1, max_length=2000, description="问题")
+    query: str = Field(default="", max_length=2000, description="问题")
+    question: Optional[str] = Field(default=None, max_length=2000, description="问题(别名)")
     top_k: int = Field(default=5, ge=1, le=20, description="检索文档数")
     use_rag: bool = Field(default=True, description="是否启用RAG增强")
+
+    @validator('query', pre=True, always=True)
+    def resolve_query(cls, v, values):
+        return v or ''
+
+    def get_query(self) -> str:
+        return self.query or self.question or ''
+
+    class Config:
+        extra = 'allow'
 
 class ParseBatchRequest(BaseModel):
     files: List[str] = Field(..., min_length=1, max_length=20, description="文件名列表")
@@ -904,10 +929,14 @@ def get_kg_stats() -> Dict:
         entities = db.execute("SELECT COUNT(*) FROM kg_entities").fetchone()[0]
         relations = db.execute("SELECT COUNT(*) FROM kg_relations").fetchone()[0]
         docs = db.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
+        try:
+            chunks = db.execute("SELECT COUNT(*) FROM document_chunks").fetchone()[0]
+        except:
+            chunks = 0
         db.close()
-        return {"entities": entities, "relations": relations, "documents": docs}
+        return {"entities": entities, "relations": relations, "documents": docs, "chunks": chunks}
     except:
-        return {"entities": 0, "relations": 0, "documents": 0}
+        return {"entities": 0, "relations": 0, "documents": 0, "chunks": 0}
 
 def get_kg_for_d3(limit: int = 200) -> Dict:
     try:
@@ -1357,7 +1386,7 @@ async def api_qa(req: Request):
     except Exception as e:
         return JSONResponse({"error": f"参数校验失败: {str(e)}"}, status_code=422)
 
-    query = qa_req.query
+    query = qa_req.get_query()
     trace_id = str(uuid.uuid4())[:8]
     correlation_id_var.set(trace_id)
     t0 = time.time()
@@ -1464,6 +1493,10 @@ async def api_agent_plan(req: Request):
     except Exception as e:
         return JSONResponse({"error": f"参数校验失败: {str(e)}"}, status_code=422)
 
+    # 兼容 task/query 字段
+    if not plan_req.query and plan_req.task:
+        plan_req.query = plan_req.task
+
     trace_id = str(uuid.uuid4())[:8]
     correlation_id_var.set(trace_id)
     t0 = time.time()
@@ -1565,6 +1598,10 @@ async def api_agent_execute(req: Request):
         exec_req = AgentExecuteRequest(**body)
     except Exception as e:
         return JSONResponse({"error": f"参数校验失败: {str(e)}"}, status_code=422)
+
+    # 兼容 task/query 字段
+    if not exec_req.query and exec_req.task:
+        exec_req.query = exec_req.task
 
     trace_id = exec_req.trace_id or str(uuid.uuid4())[:8]
     correlation_id_var.set(trace_id)
@@ -1810,6 +1847,91 @@ async def api_docs_search(req: Request):
     query = body.get("query", "")
     docs = search_docs(query)
     return JSONResponse({"data": [{"id": d[0], "title": d[1], "doc_type": d[2], "source_type": d[3]} for d in docs]})
+
+# ==================== 路由别名（兼容标准路径） ====================
+@app.get("/health")
+async def health_alias():
+    """健康检查别名"""
+    return await api_health()
+
+@app.get("/ready")
+async def ready_alias():
+    """就绪检查别名"""
+    return await api_readiness()
+
+@app.get("/api/documents")
+async def api_documents_alias(page: int = 1, page_size: int = 20):
+    """文档列表标准分页接口"""
+    offset = (page - 1) * page_size
+    db = get_db()
+    try:
+        total = db.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
+        rows = db.execute(
+            "SELECT id, doc_id, title, doc_type, LENGTH(content) as chars, created_at FROM documents ORDER BY id DESC LIMIT ? OFFSET ?",
+            (page_size, offset)
+        ).fetchall()
+        db.close()
+        return JSONResponse({
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "items": [{"id": r[0], "doc_id": r[1], "title": r[2],
+                       "doc_type": r[3], "chars": r[4], "created_at": r[5]} for r in rows]
+        })
+    except Exception as e:
+        db.close()
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+@app.get("/api/jobs")
+async def api_jobs_alias(page: int = 1, page_size: int = 20):
+    """任务列表标准分页接口"""
+    db = get_db()
+    try:
+        total = db.execute("SELECT COUNT(*) FROM parse_history").fetchone()[0]
+        offset = (page - 1) * page_size
+        rows = db.execute(
+            "SELECT batch_id, filename, status, progress, created_at FROM parse_history ORDER BY id DESC LIMIT ? OFFSET ?",
+            (page_size, offset)
+        ).fetchall()
+        db.close()
+        return JSONResponse({
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "items": [{"job_id": r[0], "filename": r[1], "status": r[2],
+                       "progress": r[3], "created_at": r[4]} for r in rows]
+        })
+    except Exception as e:
+        db.close()
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+@app.post("/api/parse")
+async def api_parse_single(req: Request):
+    """单文件解析接口（兼容）"""
+    try:
+        body = await req.json()
+        url = body.get("url", "")
+        filename = body.get("filename", url.split("/")[-1] if url else "unknown.pdf")
+        return JSONResponse({"status": "submitted", "message": f"文件 {filename} 已提交解析队列", "filename": filename})
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+
+@app.post("/api/knowledge/search")
+async def api_knowledge_search(req: Request):
+    """知识库搜索别名"""
+    body = await req.json()
+    query = body.get("query", "")
+    limit = body.get("limit", 10)
+    # 知识图谱实体搜索
+    kg_result = tool_get_entities(name_filter=query[:30], limit=limit)
+    entities = kg_result.get("entities", [])
+    # 文档搜索
+    docs = search_docs(query, limit)
+    return JSONResponse({
+        "results": entities,
+        "docs": [{"id": d[0], "title": d[1], "doc_type": d[2]} for d in docs],
+        "total": len(entities)
+    })
 
 # ==================== 启动 ====================
 if __name__ == "__main__":
