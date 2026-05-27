@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>惯导智衡 · Data Agent</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f7fa;--bg2:#eef1f6;--card:#fff;--border:#e2e8f0;
+  --text:#1a2332;--text1:#1a2332;--text2:#4a5568;--text3:#8896a8;
+  --primary:#2563eb;--primary-light:#eff6ff;--primary-dark:#1d4ed8;
+  --success:#059669;--success-bg:#ecfdf5;
+  --warning:#d97706;--warning-bg:#fffbeb;
+  --danger:#dc2626;--danger-bg:#fef2f2;
+  --info:#0891b2;--info-bg:#ecfeff;
+  --radius:10px;--shadow:0 2px 12px rgba(0,0,0,0.07);--shadow-lg:0 8px 32px rgba(0,0,0,0.12)
+}
+body{font-family:'PingFang SC','Microsoft YaHei','Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+header{position:fixed;top:0;left:0;right:0;height:60px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 32px;z-index:1000;gap:32px}
+.logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:700;color:var(--text);white-space:nowrap}
+.logo img{height:36px;border-radius:8px}
+.logo-badge{font-size:11px;font-weight:500;background:var(--primary);color:#fff;padding:2px 8px;border-radius:20px;margin-left:4px}
+nav{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+.nav-item{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text2);white-space:nowrap;transition:all 0.15s;border:none;background:none}
+.nav-item:hover{background:var(--bg2);color:var(--text)}
+.nav-item.active{background:var(--primary-light);color:var(--primary)}
+.header-right{display:flex;align-items:center;gap:12px;white-space:nowrap}
+.status-pill{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--success);background:var(--success-bg);padding:5px 12px;border-radius:20px;font-weight:500}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+main{margin-top:60px;padding:32px;max-width:1360px;margin-left:auto;margin-right:auto}
+.page-header{margin-bottom:28px}
+.page-title{font-size:22px;font-weight:700;margin-bottom:6px}
+.page-sub{font-size:13px;color:var(--text3)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
+.card-title{font-size:14px;font-weight:600;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;color:var(--text)}
+.card-title .ct-right{margin-left:auto;font-size:12px;font-weight:400;color:var(--text3)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;display:flex;align-items:center;gap:16px;transition:box-shadow 0.2s}
+.stat:hover{box-shadow:var(--shadow)}
+.stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.si-blue{background:#eff6ff;color:#2563eb}
+.si-purple{background:#f5f3ff;color:#7c3aed}
+.si-green{background:#ecfdf5;color:#059669}
+.si-cyan{background:#ecfeff;color:#0891b2}
+.stat-num{font-size:26px;font-weight:700;line-height:1;color:var(--text)}
+.stat-label{font-size:12px;color:var(--text3);margin-top:4px}
+.stat-loading{font-size:26px;font-weight:700;line-height:1;color:var(--text3)}
+.stat-error{font-size:14px;font-weight:500;line-height:1;color:var(--danger)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;border:none;line-height:1}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-primary:disabled{background:#93c5fd;cursor:not-allowed}
+.btn-secondary{background:var(--bg2);color:var(--text2);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--border)}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border:1px solid #fecaca}
+.btn-lg{padding:13px 28px;font-size:14px}
+.input{width:100%;padding:11px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;transition:all 0.15s;font-family:inherit}
+.input:focus{outline:none;border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+.input::placeholder{color:var(--text3)}
+.progress-bar{height:5px;background:var(--bg2);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width 0.4s ease}
+.pf-blue{background:var(--primary)}
+.pf-green{background:var(--success)}
+.pf-orange{background:var(--warning)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-blue{background:var(--primary-light);color:var(--primary)}
+.badge-green{background:var(--success-bg);color:var(--success)}
+.badge-yellow{background:var(--warning-bg);color:var(--warning)}
+.badge-cyan{background:var(--info-bg);color:var(--info)}
+.badge-red{background:var(--danger-bg);color:var(--danger)}
+.badge-gray{background:var(--bg2);color:var(--text3)}
+table{width:100%;border-collapse:collapse}
+th{font-size:12px;font-weight:600;color:var(--text3);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);background:var(--bg)}
+td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg)}
+.drop-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:48px 32px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--bg)}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--primary);background:var(--primary-light)}
+.section{display:none}
+.section.active{display:block}
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-text{font-size:14px;margin-bottom:6px;color:var(--text2)}
+.empty-sub{font-size:12px}
+.qa-item{border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.qa-q{font-weight:600;margin-bottom:10px;color:var(--text);display:flex;gap:8px}
+.qa-a{color:var(--text2);line-height:1.8;font-size:13px}
+.qa-sources{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--text3)}
+.flow-steps{display:flex;gap:0;margin-bottom:20px}
+.flow-step{flex:1;display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--card);border:1px solid var(--border);position:relative}
+.flow-step:not(:last-child)::after{content:'→';position:absolute;right:-12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:16px;z-index:1;background:var(--bg);padding:0 2px}
+.flow-step:first-child{border-radius:var(--radius) 0 0 var(--radius)}
+.flow-step:last-child{border-radius:0 var(--radius) var(--radius) 0}
+.flow-step.done{background:var(--success-bg);border-color:#a7f3d0}
+.flow-step.active-step{background:var(--primary-light);border-color:#93c5fd}
+.fs-num{width:26px;height:26px;border-radius:50%;background:var(--bg2);color:var(--text3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.flow-step.done .fs-num{background:var(--success);color:#fff}
+.flow-step.active-step .fs-num{background:var(--primary);color:#fff}
+.fs-text{font-size:12px;font-weight:500;color:var(--text2)}
+#kg-svg{width:100%;height:560px;background:var(--bg);border-radius:var(--radius);cursor:grab}
+#kg-svg:active{cursor:grabbing}
+.kg-tooltip{position:fixed;background:var(--card);border:1px solid var(--border);padding:10px 14px;border-radius:8px;font-size:12px;pointer-events:none;display:none;z-index:9999;box-shadow:var(--shadow-lg);max-width:220px}
+.kg-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.kg-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.kg-dot{width:10px;height:10px;border-radius:50%}
+.parse-card{border:1px solid var(--border);border-radius:var(--radius);padding:16px;background:var(--card);transition:border-color 0.2s;margin-bottom:10px}
+.parse-card.status-done{border-left:3px solid var(--success)}
+.parse-card.status-failed{border-left:3px solid var(--danger)}
+.parse-card.status-parsing,.parse-card.status-extracting{border-left:3px solid var(--primary)}
+.parse-card.status-pending{border-left:3px solid var(--border)}
+.recent-doc{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.recent-doc:last-child{border-bottom:none}
+.pagination{display:flex;align-items:center;gap:8px;margin-top:16px;justify-content:center}
+.page-btn{padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:13px;color:var(--text2)}
+.page-btn:hover{background:var(--bg2)}
+.page-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+/* 文件列表单项删除 */
+.file-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg2);border-radius:8px;margin-bottom:6px}
+.file-item-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:0 4px;line-height:1}
+.file-item-del:hover{color:var(--danger)}
+/* Markdown渲染 */
+.md-content h1,.md-content h2,.md-content h3{font-weight:700;margin:12px 0 6px;color:var(--text)}
+.md-content h1{font-size:16px}.md-content h2{font-size:15px}.md-content h3{font-size:14px}
+.md-content p{margin:6px 0;line-height:1.8;color:var(--text2)}
+.md-content ul,.md-content ol{padding-left:20px;margin:6px 0}
+.md-content li{margin:3px 0;line-height:1.7;color:var(--text2)}
+.md-content strong{font-weight:600;color:var(--text)}
+.md-content code{background:var(--bg2);padding:1px 5px;border-radius:4px;font-size:12px;font-family:monospace}
+.md-content pre{background:var(--bg2);padding:12px;border-radius:8px;overflow-x:auto;margin:8px 0}
+.md-content pre code{background:none;padding:0}
+.md-content table{margin:8px 0}
+.md-content blockquote{border-left:3px solid var(--primary);padding-left:12px;color:var(--text3);margin:8px 0}
+/* 文档详情弹窗 */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:2000;display:flex;align-items:center;justify-content:center}
+.modal{background:var(--card);border-radius:var(--radius);width:90%;max-width:800px;max-height:85vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg)}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.modal-title{font-size:16px;font-weight:700;flex:1}
+.modal-close{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3);padding:0 4px}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:24px;overflow-y:auto;flex:1}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.flow-steps{flex-direction:column}.flow-step:not(:last-child)::after{content:'↓';right:auto;left:50%;top:auto;bottom:-12px}}
+footer{text-align:center;padding:32px;color:var(--text3);font-size:12px;border-top:1px solid var(--border);margin-top:40px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <img src="/static/team_logo.png" alt="Logo" onerror="this.style.display='none'">
+    惯导智衡
+    <span class="logo-badge">赛道二</span>
+  </div>
+  <nav id="main-nav">
+    <button class="nav-item active" onclick="showSection('dashboard',this)">📊 总览</button>
+    <button class="nav-item" onclick="showSection('parse',this)">📄 PDF解析</button>
+    <button class="nav-item" onclick="showSection('agent',this)">🤖 Agent</button>
+    <button class="nav-item" onclick="showSection('kg',this)">🔗 知识图谱</button>
+    <button class="nav-item" onclick="showSection('qa',this)">💬 智能问答</button>
+    <button class="nav-item" onclick="showSection('docs',this)">📚 知识库</button>
+  </nav>
+  <div class="header-right">
+    <div class="status-pill"><div class="dot"></div>系统在线</div>
+  </div>
+</header>
+<main>
+  <!-- 总览 -->
+  <div id="sec-dashboard" class="section active">
+    <div class="page-header">
+      <h1 class="page-title">系统总览</h1>
+      <p class="page-sub">MinerU 2026大赛赛道二 · Data Agent · 惯性检测实验室</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-icon si-blue">📄</div><div class="stat-body"><div class="stat-num" id="s-docs"><span class="stat-loading">…</span></div><div class="stat-label">知识文档</div></div></div>
+      <div class="stat"><div class="stat-icon si-purple">🔗</div><div class="stat-body"><div class="stat-num" id="s-entities"><span class="stat-loading">…</span></div><div class="stat-label">实体节点</div></div></div>
+      <div class="stat"><div class="stat-icon si-green">↔️</div><div class="stat-body"><div class="stat-num" id="s-relations"><span class="stat-loading">…</span></div><div class="stat-label">关系连接</div></div></div>
+      <div class="stat"><div class="stat-icon si-cyan">⚙️</div><div class="stat-body"><div class="stat-num" id="s-jobs"><span class="stat-loading">…</span></div><div class="stat-label">已完成解析</div></div></div>
+    </div>
+    <div class="flow-steps" id="flow-steps">
+      <div class="flow-step" id="fs1"><div class="fs-num">1</div><div class="fs-text">上传PDF报告</div></div>
+      <div class="flow-step" id="fs2"><div class="fs-num">2</div><div class="fs-text">MinerU解析</div></div>
+      <div class="flow-step" id="fs3"><div class="fs-num">3</div><div class="fs-text">知识图谱构建</div></div>
+      <div class="flow-step" id="fs4"><div class="fs-num">4</div><div class="fs-text">智能问答</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">📋 最近入库文档</div>
+        <div id="recent-docs-list"><div class="empty"><div class="empty-icon">📭</div><div class="empty-text">暂无文档</div></div></div>
+        <div style="margin-top:14px"><button class="btn btn-secondary" onclick="showSection('docs',document.querySelectorAll('.nav-item')[5])" style="width:100%">查看全部文档 →</button></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🚀 快速操作</div>
+        <div style="display:grid;gap:10px">
+          <button class="btn btn-primary btn-lg" onclick="showSection('parse',document.querySelectorAll('.nav-item')[1])" style="width:100%">📤 上传PDF开始解析</button>
+          <button class="btn btn-secondary btn-lg" onclick="showSection('qa',document.querySelectorAll('.nav-item')[4])" style="width:100%">💬 向知识库提问</button>
+          <button class="btn btn-secondary btn-lg" onclick="showSection('agent',document.querySelectorAll('.nav-item')[2])" style="width:100%">🤖 启动Agent任务</button>
+          <button class="btn btn-secondary btn-lg" onclick="showSection('kg',document.querySelectorAll('.nav-item')[3])" style="width:100%">🔗 查看知识图谱</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔧 已注册工具链 <span class="ct-right" id="tools-count"></span></div>
+        <div id="tools-list" style="display:grid;gap:6px"></div>
+      </div>
+    </div>
+  </div>
+  <div id="sec-parse" class="section">
+    <div class="page-header">
+      <h1 class="page-title">PDF 解析</h1>
+      <p class="page-sub">上传惯性检测报告，MinerU云端API智能解析，自动构建知识图谱</p>
+    </div>
+    <div class="card">
+      <div class="card-title">📤 上传文件</div>
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <div style="font-size:40px;margin-bottom:12px">📄</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">点击或拖拽 PDF 文件到此处</div>
+        <div style="color:var(--text3);font-size:13px">支持批量上传 · 单文件最大 50MB · 仅支持 .pdf 格式</div>
+      </div>
+      <input type="file" id="file-input" accept=".pdf" multiple style="display:none" onchange="handleFiles(this.files)">
+      <div id="selected-files" style="margin-top:14px"></div>
+      <div style="margin-top:16px;display:flex;gap:10px">
+        <button class="btn btn-primary btn-lg" id="batch-upload-btn" onclick="doBatchUpload()" disabled style="flex:1">🚀 开始解析</button>
+        <button class="btn btn-secondary" onclick="clearSelection()">清空全部</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        📊 解析任务
+        <span class="ct-right" id="batch-summary"></span>
+        <button class="btn btn-secondary" style="margin-left:8px;padding:5px 12px;font-size:12px" onclick="refreshParseList()">🔄 刷新</button>
+        <div id="batch-overall-bar" style="display:none;margin-left:12px;width:120px"><div class="progress-bar"><div class="progress-fill pf-blue" id="batch-overall-fill" style="width:0%"></div></div></div>
+      </div>
+      <div id="parse-progress-list">
+        <div class="empty"><div class="empty-icon">📭</div><div class="empty-text">暂无解析任务</div><div class="empty-sub">上传 PDF 文件后任务将显示在此</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent -->
+  <div id="sec-agent" class="section">
+    <div class="page-header">
+      <h1 class="page-title">Agent 任务</h1>
+      <p class="page-sub">ReAct + CoT 智能Agent · Reason-Act-Observe 循环执行 · 全链路追踪</p>
+    </div>
+    <div class="card">
+      <div class="card-title">📝 任务描述
+        <span class="ct-right" style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--text3)">执行模式：</span>
+          <select id="agent-mode" style="font-size:12px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text1)">
+            <option value="react">🤖 ReAct（推理-行动-观察）</option>
+            <option value="simple">⚡ 简单模式</option>
+          </select>
+        </span>
+      </div>
+      <input type="text" class="input" id="agent-input" placeholder="输入任务，例如：分析陀螺仪零偏稳定性指标并生成改进建议" style="margin-bottom:14px" onkeydown="if(event.key==='Enter')doAgentRun()">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px" id="agent-examples">
+        <span style="font-size:12px;color:var(--text3);align-self:center">示例：</span>
+        <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="setAgentInput('分析陀螺仪零偏稳定性检测数据，给出合格判定建议')">陀螺仪零偏分析</button>
+        <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="setAgentInput('提取所有检测报告中的关键技术参数，生成对比表格')">参数对比提取</button>
+        <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="setAgentInput('识别知识库中的惯性器件型号，梳理其技术规格')">器件型号梳理</button>
+        <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="setAgentInput('分析加速度计标度因数误差，评估是否符合GJB标准')">加速度计标度分析</button>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="doPlan()" style="flex:1;min-width:120px" id="plan-btn">📋 制定计划（CoT）</button>
+        <button class="btn btn-secondary" onclick="doExecute()" style="flex:1;min-width:120px" id="exec-btn" disabled title="请先点击「制定计划」生成CoT计划，再执行">▶️ 执行计划</button>
+        <button class="btn btn-primary" onclick="doAgentRun()" style="flex:1;min-width:120px;background:var(--success)" id="run-btn">🚀 一键ReAct执行</button>
+        <button class="btn btn-secondary" onclick="cancelAgent()" id="cancel-btn" style="display:none;background:var(--danger);color:#fff">⏹ 取消任务</button>
+        <button class="btn btn-secondary" onclick="clearAgent()">清空</button>
+      </div>
+    </div>
+    <div class="card" id="agent-result-card" style="display:none">
+      <div class="card-title" id="agent-result-title">执行结果
+        <span class="ct-right" id="agent-meta" style="font-size:11px;color:var(--text3)"></span>
+      </div>
+      <div id="agent-output" class="md-content" style="font-size:13px;color:var(--text2);line-height:1.9"></div>
+    </div>
+    <!-- ReAct步骤可视化 -->
+    <div class="card" id="agent-steps-card" style="display:none">
+      <div class="card-title">🔄 ReAct 执行步骤
+        <span class="ct-right" style="font-size:11px;color:var(--text3)" id="agent-steps-meta"></span>
+      </div>
+      <div id="agent-steps-list"></div>
+    </div>
+    <!-- 工具调用日志面板 -->
+    <div class="card" id="agent-trace-card" style="display:none">
+      <div class="card-title">🔍 工具调用追踪日志
+        <span class="ct-right" id="trace-id-display" style="font-family:monospace;font-size:11px"></span>
+      </div>
+      <div id="agent-trace-list"></div>
+    </div>
+  </div>
+
+  <!-- 知识图谱 -->
+  <div id="sec-kg" class="section">
+    <div class="page-header">
+      <h1 class="page-title">知识图谱</h1>
+      <p class="page-sub">实体关系可视化 · 支持拖拽、缩放、悬停查看详情</p>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <div class="kg-legend" id="kg-legend"></div>
+        <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input type="text" class="input" id="kg-search" placeholder="🔍 搜索节点..." style="width:150px;padding:7px 12px" oninput="filterKG(this.value)">
+          <select id="kg-type-filter" style="font-size:12px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text1)" onchange="filterKGByType(this.value)">
+            <option value="">全部类型</option>
+          </select>
+          <button class="btn btn-secondary" onclick="resetKGView()" style="font-size:12px">重置视图</button>
+          <button class="btn btn-secondary" onclick="expandKGNodes()" style="font-size:12px">展开更多</button>
+          <span id="kg-count" style="font-size:12px;color:var(--text3);align-self:center"></span>
+        </div>
+      </div>
+      <div style="position:relative">
+        <svg id="kg-svg"></svg>
+        <div class="kg-tooltip" id="kg-tooltip"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 智能问答 -->
+  <div id="sec-qa" class="section">
+    <div class="page-header">
+      <h1 class="page-title">智能问答</h1>
+      <p class="page-sub">基于知识库 RAG 检索增强，精准回答惯性检测领域问题</p>
+    </div>
+    <div class="card">
+      <div class="card-title">❓ 提问</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <span style="font-size:12px;color:var(--text3);align-self:center">示例：</span>
+        <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="setQAInput('陀螺仪零偏稳定性的检测标准是什么？')">零偏稳定性标准</button>
+        <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="setQAInput('惯性测量单元的主要技术参数有哪些？')">IMU技术参数</button>
+        <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="setQAInput('加速度计标度因数的测试方法是什么？')">标度因数测试</button>
+        <button class="btn btn-danger" style="font-size:12px;padding:5px 12px;margin-left:auto" onclick="clearQAHistory()">🗑 清空历史</button>
+      </div>
+      <div style="display:flex;gap:10px">
+        <input type="text" class="input" id="qa-input" placeholder="输入问题，按 Enter 或点击查询..." onkeydown="if(event.key==='Enter')doQA()">
+        <button class="btn btn-primary" onclick="doQA()" style="white-space:nowrap">🔍 查询</button>
+      </div>
+    </div>
+    <div id="qa-history" style="display:grid;gap:12px">
+      <div class="empty"><div class="empty-icon">💬</div><div class="empty-text">暂无问答记录</div><div class="empty-sub">输入问题开始查询</div></div>
+    </div>
+  </div>
+
+  <!-- 知识库 -->
+  <div id="sec-docs" class="section">
+    <div class="page-header">
+      <h1 class="page-title">知识库</h1>
+      <p class="page-sub">已入库的检测报告和技术文档</p>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        文档列表
+        <span class="ct-right" id="docs-count"></span>
+      </div>
+      <input type="text" class="input" id="doc-search" placeholder="搜索文档标题或内容..." style="margin-bottom:14px" oninput="debounceSearch(this.value)">
+      <div id="docs-list"></div>
+      <div class="pagination" id="docs-pagination"></div>
+    </div>
+  </div>
+</main>
+<footer>惯导智衡 · MinerU 2026大赛赛道二 · Data Agent v5.1 · 惯性产品检测实验室</footer>
+
+<!-- 文档详情弹窗 -->
+<div class="modal-overlay" id="doc-modal" style="display:none" onclick="if(event.target===this)closeDocModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <span style="font-size:20px">📄</span>
+      <div class="modal-title" id="modal-doc-title">文档详情</div>
+      <button class="modal-close" onclick="closeDocModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="modal-doc-meta" style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap"></div>
+      <div id="modal-doc-content" class="md-content" style="font-size:13px;line-height:1.8"></div>
+    </div>
+  </div>
+</div>
+<script>
+'use strict';
+// ==================== 全局状态 ====================
+const State = {
+  pollingTimer: null,
+  currentJobId: null,
+  qaHistory: [],
+  docsPage: 1,
+  docsPageSize: 20,
+  docsTotalCount: 0,
+  docsSearchQuery: '',
+  searchTimer: null,
+  kgData: { nodes: [], links: [] },
+  kgTransform: { x: 0, y: 0, scale: 1 },
+  planReady: false,
+  lastPlan: '',
+  statsLoaded: false
+};
+
+// ==================== 工具函数 ====================
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtNum(n) { return n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n); }
+function fmtTime(s) { if (!s) return '—'; return s.slice(0,16).replace('T',' '); }
+
+// 简易Markdown渲染（修复问题16、17）
+function renderMd(text) {
+  if (!text) return '';
+  let s = String(text);
+  // 如果内容包含HTML标签（如MinerU解析的表格），直接返回，不做转义
+  if (/<table|<tr|<td|<th|<div|<p>/.test(s)) {
+    // 仅做基本的Markdown处理，不转义已有HTML
+    s = s.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+    s = s.replace(/^## (.+)$/gm,'<h2>$1</h2>');
+    s = s.replace(/^# (.+)$/gm,'<h1>$1</h1>');
+    s = s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+    s = s.replace(/\*(.+?)\*/g,'<em>$1</em>');
+    s = s.replace(/`([^`]+)`/g,'<code>$1</code>');
+    // 给表格加样式
+    s = s.replace(/<table>/g,'<table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:12px">');
+    s = s.replace(/<td/g,'<td style="padding:6px 10px;border:1px solid var(--border)"');
+    s = s.replace(/<th/g,'<th style="padding:6px 10px;border:1px solid var(--border);background:var(--bg);font-weight:600"');
+    return s;
+  }
+  // 纯文本Markdown处理
+  s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // 标题
+  s = s.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+  s = s.replace(/^## (.+)$/gm,'<h2>$1</h2>');
+  s = s.replace(/^# (.+)$/gm,'<h1>$1</h1>');
+  // 粗体/斜体
+  s = s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  s = s.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  // 代码块
+  s = s.replace(/```[\w]*\n([\s\S]*?)```/g,'<pre><code>$1</code></pre>');
+  s = s.replace(/`([^`]+)`/g,'<code>$1</code>');
+  // 无序列表
+  s = s.replace(/^[-*] (.+)$/gm,'<li>$1</li>');
+  s = s.replace(/(<li>.*<\/li>\n?)+/g,'<ul>$&</ul>');
+  // 有序列表
+  s = s.replace(/^\d+\. (.+)$/gm,'<li>$1</li>');
+  // 引用
+  s = s.replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>');
+  // 段落（双换行）
+  s = s.replace(/\n\n+/g,'</p><p>');
+  s = '<p>' + s + '</p>';
+  // 单换行
+  s = s.replace(/\n/g,'<br>');
+  // 清理空段落
+  s = s.replace(/<p><\/p>/g,'');
+  s = s.replace(/<p>(<h[1-3]>)/g,'$1');
+  s = s.replace(/(<\/h[1-3]>)<\/p>/g,'$1');
+  s = s.replace(/<p>(<ul>)/g,'$1');
+  s = s.replace(/(<\/ul>)<\/p>/g,'$1');
+  s = s.replace(/<p>(<pre>)/g,'$1');
+  s = s.replace(/(<\/pre>)<\/p>/g,'$1');
+  s = s.replace(/<p>(<blockquote>)/g,'$1');
+  s = s.replace(/(<\/blockquote>)<\/p>/g,'$1');
+  return s;
+}
+
+// ==================== 导航 ====================
+function showSection(name, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(a => a.classList.remove('active'));
+  const sec = document.getElementById('sec-' + name);
+  if (sec) sec.classList.add('active');
+  if (el) el.classList.add('active');
+  if (name === 'dashboard') { loadStats(); loadRecentDocs(); }
+  if (name === 'kg') loadKG();
+  if (name === 'docs') loadDocs();
+  if (name === 'qa') loadQAHistory();
+}
+
+// ==================== 统计（修复问题8：区分加载中/失败） ====================
+async function loadStats() {
+  ['s-docs','s-entities','s-relations','s-jobs'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '<span class="stat-loading">…</span>';
+  });
+  try {
+    const [r1, r2, r3] = await Promise.all([
+      fetch('/api/stats'), fetch('/api/jobs/list/summary'), fetch('/api/tools')
+    ]);
+    if (!r1.ok || !r2.ok) throw new Error('请求失败');
+    const d1 = await r1.json();
+    const d2 = await r2.json();
+    document.getElementById('s-docs').textContent = fmtNum(d1.documents || 0);
+    document.getElementById('s-entities').textContent = fmtNum(d1.entities || 0);
+    document.getElementById('s-relations').textContent = fmtNum(d1.relations || 0);
+    document.getElementById('s-jobs').textContent = fmtNum(d2.done || 0);
+    // 工具链展示
+    if (r3.ok) {
+      const d3 = await r3.json();
+      const tools = d3.tools || [];
+      const tcEl = document.getElementById('tools-count');
+      if (tcEl) tcEl.textContent = tools.length + ' 个工具';
+      const tlEl = document.getElementById('tools-list');
+      if (tlEl) {
+        const TOOL_ICONS = {'search_knowledge_base':'🔍','get_kg_entities':'🔗','get_kg_relations':'↔️','extract_structured_fields':'📊','call_llm':'🧠','get_stats':'📈'};
+        tlEl.innerHTML = tools.map(t => `<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 12px;background:var(--bg2);border-radius:8px"><span style="font-size:16px;flex-shrink:0">${TOOL_ICONS[t.name]||'🔧'}</span><div><div style="font-weight:600;font-size:12px;color:var(--text)">${esc(t.name)}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${esc(t.description)}</div></div></div>`).join('');
+      }
+    }
+    const hasDocs = (d1.documents || 0) > 0;
+    const hasKG = (d1.entities || 0) > 0;
+    const hasJobs = (d2.total || 0) > 0;
+    if (hasJobs) document.getElementById('fs1').classList.add('done');
+    if (hasDocs) document.getElementById('fs2').classList.add('done');
+    if (hasKG) document.getElementById('fs3').classList.add('done');
+    if (hasDocs && hasKG) document.getElementById('fs4').classList.add('active-step');
+    State.statsLoaded = true;
+  } catch(e) {
+    ['s-docs','s-entities','s-relations','s-jobs'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '<span class="stat-error">加载失败</span>';
+    });
+  }
+}
+
+async function loadRecentDocs() {
+  try {
+    const r = await fetch('/api/docs/list?limit=5&offset=0');
+    const d = await r.json();
+    const docs = d.docs || [];
+    const el = document.getElementById('recent-docs-list');
+    if (docs.length === 0) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">暂无文档</div><div class="empty-sub">上传 PDF 后文档将显示在此</div></div>';
+      return;
+    }
+    el.innerHTML = docs.map(doc => `
+      <div class="recent-doc" style="cursor:pointer" onclick="openDocModal(${doc.id})">
+        <span style="font-size:20px">📄</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:500;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(doc.title||'未命名')}</div>
+          <div style="font-size:11px;color:var(--text3)">${esc(doc.doc_type||'')} · ${doc.chars?doc.chars.toLocaleString()+'字符':'—'}</div>
+        </div>
+        <span class="badge badge-blue">${esc(doc.doc_type||'文档')}</span>
+      </div>`).join('');
+  } catch(e) { console.error('loadRecentDocs:', e); }
+}
+
+// ==================== 文件上传（修复问题11：单文件删除） ====================
+let selectedFiles = [];
+
+function setupDropZone() {
+  const dz = document.getElementById('drop-zone');
+  if (!dz) return;
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+}
+
+function handleFiles(files) {
+  const pdfs = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.pdf'));
+  if (pdfs.length === 0) { alert('请选择 PDF 格式文件'); return; }
+  // 追加而非替换，避免重复
+  const existing = new Set(selectedFiles.map(f => f.name));
+  pdfs.forEach(f => { if (!existing.has(f.name)) selectedFiles.push(f); });
+  renderSelectedFiles();
+}
+
+function removeFile(idx) {
+  selectedFiles.splice(idx, 1);
+  renderSelectedFiles();
+}
+
+function renderSelectedFiles() {
+  const el = document.getElementById('selected-files');
+  const btn = document.getElementById('batch-upload-btn');
+  if (!el || !btn) return;
+  if (selectedFiles.length === 0) { el.innerHTML = ''; btn.disabled = true; return; }
+  const totalSize = selectedFiles.reduce((s, f) => s + f.size, 0);
+  el.innerHTML = `<div style="font-size:12px;color:var(--text3);margin-bottom:8px">已选 ${selectedFiles.length} 个文件，共 ${(totalSize/1024/1024).toFixed(2)} MB</div>` +
+    selectedFiles.map((f, i) => `<div class="file-item">
+      <span>📄</span>
+      <span style="flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name)}</span>
+      <span style="font-size:12px;color:var(--text3)">${(f.size/1024).toFixed(0)} KB</span>
+      <button class="file-item-del" onclick="removeFile(${i})" title="移除此文件">✕</button>
+    </div>`).join('');
+  btn.disabled = false;
+}
+
+function clearSelection() {
+  selectedFiles = [];
+  const fi = document.getElementById('file-input');
+  if (fi) fi.value = '';
+  renderSelectedFiles();
+}
+
+async function doBatchUpload() {
+  if (selectedFiles.length === 0) return;
+  const btn = document.getElementById('batch-upload-btn');
+  btn.disabled = true; btn.textContent = '⏳ 上传中...';
+  const formData = new FormData();
+  for (const f of selectedFiles) formData.append('files', f);
+  try {
+    const r = await fetch('/api/parse/batch', { method: 'POST', body: formData });
+    const d = await r.json();
+    if (d.error) { alert('上传失败: ' + d.error); btn.disabled = false; btn.textContent = '🚀 开始解析'; return; }
+    btn.textContent = '✅ 已提交 ' + selectedFiles.length + ' 个文件';
+    document.getElementById('selected-files').innerHTML =
+      `<div style="color:var(--success);padding:10px 14px;background:var(--success-bg);border-radius:8px;font-size:13px">✅ ${selectedFiles.length} 个文件已提交，正在后台解析...</div>`;
+    selectedFiles = [];
+    State.currentJobId = d.job_id;
+    document.getElementById('batch-overall-bar').style.display = 'block';
+    startPolling(d.job_id);
+  } catch(e) { alert('上传失败: ' + e); btn.disabled = false; btn.textContent = '🚀 开始解析'; }
+}
+
+// ==================== 解析轮询（修复问题3：完成后停止轮询） ====================
+function startPolling(jobId) {
+  if (State.pollingTimer) clearInterval(State.pollingTimer);
+  State.pollingTimer = setInterval(() => pollJobStatus(jobId), 3000);
+  pollJobStatus(jobId);
+}
+
+async function pollJobStatus(jobId) {
+  try {
+    const r = await fetch('/api/jobs/' + jobId);
+    const d = await r.json();
+    const tasks = d.tasks || [];
+    renderParseList(tasks);
+    const done = tasks.filter(t => t.status === 'done').length;
+    const failed = tasks.filter(t => t.status === 'failed').length;
+    const total = tasks.length;
+    const pct = total > 0 ? Math.round((done + failed) / total * 100) : 0;
+    const fill = document.getElementById('batch-overall-fill');
+    if (fill) fill.style.width = pct + '%';
+    const summary = document.getElementById('batch-summary');
+    if (summary) summary.textContent = `完成 ${done}/${total}${failed > 0 ? ' · 失败 ' + failed : ''}`;
+    // 修复问题3：所有任务完成（done+failed=total）即停止轮询
+    if (total > 0 && done + failed >= total) {
+      clearInterval(State.pollingTimer); State.pollingTimer = null;
+      const btn = document.getElementById('batch-upload-btn');
+      if (btn) { btn.disabled = false; btn.textContent = '🚀 开始解析'; }
+      loadStats();
+      // 解析完成后显示引导提示
+      if (done > 0) {
+        const guideEl = document.getElementById('parse-guide-tip');
+        if (!guideEl) {
+          const tip = document.createElement('div');
+          tip.id = 'parse-guide-tip';
+          tip.style.cssText = 'margin-top:16px;padding:14px 18px;background:var(--success-bg);border:1px solid #a7f3d0;border-radius:10px;display:flex;align-items:center;gap:12px;font-size:13px';
+          tip.innerHTML = `<span style="font-size:20px">✅</span><div style="flex:1">解析完成！${done} 个文件已入库。</div><button class="btn btn-primary" onclick="showSection('qa',document.querySelectorAll('.nav-item')[4])">💬 去问答 →</button><button class="btn btn-secondary" onclick="showSection('kg',document.querySelectorAll('.nav-item')[3])">🔗 查看图谱 →</button>`;
+          const card = document.querySelector('#sec-parse .card:last-child');
+          if (card) card.appendChild(tip);
+        }
+      }
+    }
+  } catch(e) { console.error('poll error:', e); }
+}
+
+async function refreshParseList() {
+  if (State.currentJobId) {
+    await pollJobStatus(State.currentJobId);
+  }
+}
+
+const STATUS_MAP = {
+  pending:    { icon:'⏳', badge:'badge-gray',   label:'等待中',  cls:'status-pending' },
+  parsing:    { icon:'🔄', badge:'badge-blue',   label:'解析中',  cls:'status-parsing' },
+  extracting: { icon:'🧠', badge:'badge-cyan',   label:'抽取中',  cls:'status-extracting' },
+  done:       { icon:'✅', badge:'badge-green',  label:'已完成',  cls:'status-done' },
+  failed:     { icon:'❌', badge:'badge-red',    label:'失败',    cls:'status-failed' }
+};
+
+function renderParseList(tasks) {
+  const el = document.getElementById('parse-progress-list');
+  if (!el) return;
+  if (tasks.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">暂无解析任务</div></div>';
+    return;
+  }
+  el.innerHTML = tasks.map(t => {
+    const s = STATUS_MAP[t.status] || { icon:'❓', badge:'badge-gray', label:t.status, cls:'' };
+    const errHtml = t.status === 'failed' && t.error
+      ? `<div style="font-size:12px;color:var(--danger);margin-top:6px;padding:6px 10px;background:var(--danger-bg);border-radius:6px">错误：${esc(t.error)}</div>` : '';
+    const statsHtml = t.status === 'done'
+      ? `<span style="font-size:11px;color:var(--text3);margin-left:8px">${t.chars||0} 字符 · ${t.entities_count||0} 实体 · ${t.relations_count||0} 关系</span>` : '';
+    // 修复问题16：解析内容用Markdown渲染
+    const previewHtml = t.status === 'done' && t.content
+      ? `<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12px;color:var(--primary);user-select:none">查看解析内容</summary><div class="md-content" style="margin-top:8px;max-height:300px;overflow:auto;padding:12px;background:var(--bg2);border-radius:8px;font-size:12px;line-height:1.8">${renderMd(t.content||'')}</div></details>` : '';
+    return `<div class="parse-card ${s.cls}">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:18px">${s.icon}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.filename)}</div>
+          <div style="margin-top:4px;display:flex;align-items:center;flex-wrap:wrap;gap:4px">
+            <span class="badge ${s.badge}">${s.label}</span>${statsHtml}
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:13px;font-weight:600;color:var(--primary)">${t.progress||0}%</div>
+        </div>
+      </div>
+      <div class="progress-bar" style="margin-top:10px">
+        <div class="progress-fill ${t.status==='done'?'pf-green':t.status==='failed'?'':'pf-blue'}" style="width:${t.progress||0}%;${t.status==='failed'?'background:var(--danger)':''}"></div>
+      </div>
+      ${errHtml}${previewHtml}
+    </div>`;
+  }).join('');
+}
+
+// ==================== Agent（v5.0 ReAct + CoT + 任务控制） ====================
+let agentPlan = '';
+let agentTraceId = '';
+
+function setAgentInput(text) {
+  const el = document.getElementById('agent-input');
+  if (el) { el.value = text; el.focus(); }
+}
+
+function getAgentMode() {
+  const sel = document.getElementById('agent-mode');
+  return sel ? sel.value : 'react';
+}
+
+function setAgentBusy(busy) {
+  const planBtn = document.getElementById('plan-btn');
+  const execBtn = document.getElementById('exec-btn');
+  const runBtn = document.getElementById('run-btn');
+  const cancelBtn = document.getElementById('cancel-btn');
+  if (planBtn) planBtn.disabled = busy;
+  if (runBtn) runBtn.disabled = busy;
+  if (cancelBtn) cancelBtn.style.display = busy ? 'inline-flex' : 'none';
+  if (!busy && execBtn) execBtn.disabled = !agentPlan;
+}
+
+async function cancelAgent() {
+  if (!agentTraceId) return;
+  try {
+    await fetch('/api/agent/control', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ trace_id: agentTraceId, action: 'cancel' })
+    });
+    const output = document.getElementById('agent-output');
+    if (output) output.innerHTML += '<div style="color:var(--danger);margin-top:8px">⏹ 任务已取消</div>';
+  } catch(e) {}
+  setAgentBusy(false);
+}
+
+async function doPlan() {
+  const q = (document.getElementById('agent-input')||{}).value || '';
+  if (!q.trim()) { alert('请输入任务描述'); return; }
+  const mode = getAgentMode();
+  const planBtn = document.getElementById('plan-btn');
+  const execBtn = document.getElementById('exec-btn');
+  const card = document.getElementById('agent-result-card');
+  const title = document.getElementById('agent-result-title');
+  const output = document.getElementById('agent-output');
+  const meta = document.getElementById('agent-meta');
+  setAgentBusy(true);
+  planBtn.textContent = '⏳ CoT规划中...';
+  card.style.display = 'block';
+  title.textContent = '🧠 CoT执行计划';
+  output.innerHTML = '<div style="color:var(--text3)">正在进行Chain-of-Thought分析...</div>';
+  try {
+    const r = await fetch('/api/agent/plan', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ query: q, mode: mode, max_steps: 5 })
+    });
+    const d = await r.json();
+    if (d.error) { output.innerHTML = `<div style="color:var(--danger)">${esc(d.error)}</div>`; return; }
+    agentPlan = d.plan || '';
+    agentTraceId = d.trace_id || '';
+    output.innerHTML = renderMd(agentPlan);
+    const modeLabel = d.mode === 'react_cot' ? '🤖 ReAct+CoT' : '⚡ 简单';
+    const ctx = d.context ? ` · 文档:${d.context.docs_found} 实体:${d.context.entities_found}` : '';
+    if (meta) meta.textContent = `${modeLabel} · trace:${agentTraceId} · ${d.elapsed_ms||0}ms${ctx}`;
+    State.planReady = true;
+    execBtn.disabled = false;
+    planBtn.textContent = '📋 重新制定计划';
+    if (agentTraceId) loadTraceLog(agentTraceId);
+  } catch(e) {
+    output.innerHTML = `<div style="color:var(--danger)">请求失败: ${esc(String(e))}</div>`;
+  } finally {
+    setAgentBusy(false);
+  }
+}
+
+async function doExecute() {
+  const q = (document.getElementById('agent-input')||{}).value || '';
+  if (!q.trim()) return;
+  const mode = getAgentMode();
+  const execBtn = document.getElementById('exec-btn');
+  const title = document.getElementById('agent-result-title');
+  const output = document.getElementById('agent-output');
+  const meta = document.getElementById('agent-meta');
+  setAgentBusy(true);
+  execBtn.disabled = true; execBtn.textContent = '⏳ 执行中...';
+  title.textContent = '⚙️ 执行结果';
+  output.innerHTML = '<div style="color:var(--text3)">正在执行计划，请稍候...</div>';
+  try {
+    const r = await fetch('/api/agent/execute', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ query: q, plan: agentPlan, trace_id: agentTraceId, mode: mode })
+    });
+    const d = await r.json();
+    if (d.error) { output.innerHTML = `<div style="color:var(--danger)">${esc(d.error)}</div>`; return; }
+    const resultText = d.result || d.answer || '执行完成，无输出';
+    output.innerHTML = renderMd(resultText);
+    const modeLabel = d.mode === 'react' ? '🤖 ReAct' : '⚡ 简单';
+    if (meta) meta.textContent = `${modeLabel} · trace:${d.trace_id||agentTraceId} · ${d.steps_executed||4}步 · ${d.elapsed_ms||0}ms`;
+    // 渲染ReAct步骤
+    if (d.steps && d.steps.length > 0) renderReActSteps(d.steps, d.trace_id);
+    if (d.trace_id) loadTraceLog(d.trace_id);
+  } catch(e) {
+    output.innerHTML = `<div style="color:var(--danger)">执行失败: ${esc(String(e))}</div>`;
+  } finally {
+    setAgentBusy(false);
+    execBtn.disabled = false; execBtn.textContent = '▶️ 执行计划';
+  }
+}
+
+async function doAgentRun() {
+  const q = (document.getElementById('agent-input')||{}).value || '';
+  if (!q.trim()) { alert('请输入任务描述'); return; }
+  const mode = getAgentMode();
+  const runBtn = document.getElementById('run-btn');
+  const card = document.getElementById('agent-result-card');
+  const title = document.getElementById('agent-result-title');
+  const output = document.getElementById('agent-output');
+  const meta = document.getElementById('agent-meta');
+  setAgentBusy(true);
+  runBtn.textContent = '⏳ ReAct执行中...';
+  card.style.display = 'block';
+  title.textContent = '🚀 ReAct执行结果';
+  output.innerHTML = '<div style="color:var(--text3)">🤖 ReAct Agent启动中，推理-行动-观察循环执行...</div>';
+  try {
+    // 提交异步任务
+    const r = await fetch('/api/agent/run', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ query: q, mode: mode, max_steps: 5 })
+    });
+    const d = await r.json();
+    if (d.error) { output.innerHTML = `<div style="color:var(--danger)">${esc(d.error)}</div>`; return; }
+    agentTraceId = d.trace_id || '';
+    output.innerHTML = `<div style="color:var(--text3)">🔄 trace:${agentTraceId} · 执行中，每3秒自动刷新...</div>`;
+    if (meta) meta.textContent = `⏳ ReAct运行中 · trace:${agentTraceId}`;
+
+    // 轮询结果（最多60次，每3秒）
+    let pollCount = 0;
+    const pollInterval = setInterval(async () => {
+      pollCount++;
+      try {
+        const pr = await fetch(`/api/agent/result?trace_id=${agentTraceId}`);
+        const pd = await pr.json();
+        // 同步刷新追踪日志
+        loadTraceLog(agentTraceId);
+        if (pd.status === 'done' || pd.status === 'failed') {
+          clearInterval(pollInterval);
+          setAgentBusy(false);
+          runBtn.textContent = '🚀 一键ReAct执行';
+          if (pd.status === 'failed') {
+            output.innerHTML = `<div style="color:var(--danger)">执行失败: ${esc(pd.error||'未知错误')}</div>`;
+          } else {
+            const answer = pd.answer || '执行完成，无输出';
+            output.innerHTML = renderMd(answer);
+            const statusIcon = pd.agent_status === 'done' ? '✅' : '⚠️';
+            if (meta) meta.textContent = `${statusIcon} ReAct · trace:${agentTraceId} · ${pd.steps_executed||0}步 · ${pd.elapsed_ms||0}ms`;
+            if (pd.steps && pd.steps.length > 0) renderReActSteps(pd.steps, agentTraceId);
+          }
+        } else if (pollCount >= 60) {
+          clearInterval(pollInterval);
+          setAgentBusy(false);
+          runBtn.textContent = '🚀 一键ReAct执行';
+          output.innerHTML += '<div style="color:var(--danger)">轮询超时，请查看追踪日志</div>';
+        } else {
+          // 更新进度提示（不覆盖已有内容）
+          if (meta) meta.textContent = `⏳ ReAct运行中 · trace:${agentTraceId} · ${pollCount*3}s...`;
+        }
+      } catch(e) { /* 忽略轮询错误 */ }
+    }, 3000);
+  } catch(e) {
+    output.innerHTML = `<div style="color:var(--danger)">启动失败: ${esc(String(e))}</div>`;
+    setAgentBusy(false);
+    runBtn.textContent = '🚀 一键ReAct执行';
+  }
+}
+
+function renderReActSteps(steps, traceId) {
+  const card = document.getElementById('agent-steps-card');
+  const list = document.getElementById('agent-steps-list');
+  const metaEl = document.getElementById('agent-steps-meta');
+  if (!card || !list) return;
+  card.style.display = 'block';
+  if (metaEl) metaEl.textContent = `trace:${traceId} · ${steps.length}步`;
+  const TOOL_ICONS = {
+    'search_knowledge_base': '🔍', 'get_kg_entities': '🔗',
+    'get_kg_relations': '↔️', 'extract_structured_fields': '📊',
+    'call_llm': '🧠', 'get_stats': '📈', 'finish': '✅'
+  };
+  list.innerHTML = steps.map((s, i) => {
+    const icon = TOOL_ICONS[s.tool] || '🔧';
+    const obs = typeof s.observation === 'string' ? s.observation : JSON.stringify(s.observation);
+    return `<div style="padding:12px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${s.step}</div>
+        <span style="font-size:14px">${icon}</span>
+        <span style="font-weight:600;font-size:13px">${esc(s.tool)}</span>
+        <span style="font-size:11px;color:var(--text3);margin-left:auto">${s.duration_ms||0}ms</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px;padding-left:30px">
+        <span style="color:var(--primary);font-weight:600">思考：</span>${esc((s.thought||'').slice(0,200))}
+      </div>
+      <div style="font-size:12px;color:var(--text3);padding-left:30px">
+        <span style="color:var(--success);font-weight:600">观察：</span>${esc(obs.slice(0,200))}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function clearAgent() {
+  const el = document.getElementById('agent-input');
+  if (el) el.value = '';
+  agentPlan = ''; agentTraceId = '';
+  State.planReady = false;
+  ['agent-result-card','agent-trace-card','agent-steps-card'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  const execBtn = document.getElementById('exec-btn');
+  if (execBtn) { execBtn.disabled = true; execBtn.textContent = '▶️ 执行计划'; }
+  const planBtn = document.getElementById('plan-btn');
+  if (planBtn) planBtn.textContent = '📋 制定计划（CoT）';
+  const runBtn = document.getElementById('run-btn');
+  if (runBtn) runBtn.textContent = '🚀 一键ReAct执行';
+  setAgentBusy(false);
+}
+
+// 工具调用日志渲染
+async function loadTraceLog(traceId) {
+  const card = document.getElementById('agent-trace-card');
+  const list = document.getElementById('agent-trace-list');
+  const display = document.getElementById('trace-id-display');
+  if (!card || !list) return;
+  card.style.display = 'block';
+  if (display) display.textContent = `trace_id: ${traceId}`;
+  try {
+    const r = await fetch(`/api/agent/logs?trace_id=${traceId}`);
+    const d = await r.json();
+    const logs = d.logs || [];
+    if (logs.length === 0) { list.innerHTML = '<div style="color:var(--text3);padding:12px">日志加载中...</div>'; return; }
+    const TOOL_ICONS = {
+      'search_knowledge_base': '🔍',
+      'get_kg_entities': '🔗',
+      'get_kg_relations': '↔️',
+      'extract_structured_fields': '📊',
+      'call_llm': '🧠',
+      'get_stats': '📊'
+    };
+    list.innerHTML = logs.map(log => {
+      const icon = TOOL_ICONS[log.tool_name] || '🔧';
+      const statusColor = log.status === 'done' ? 'var(--success)' : log.status === 'running' ? 'var(--primary)' : 'var(--danger)';
+      let outputPreview = '';
+      if (log.tool_output && typeof log.tool_output === 'object') {
+        const keys = Object.keys(log.tool_output).slice(0,3);
+        outputPreview = keys.map(k => `${k}: ${JSON.stringify(log.tool_output[k]).slice(0,60)}`).join(' | ');
+      } else if (log.tool_output) {
+        outputPreview = String(log.tool_output).slice(0,120);
+      }
+      return `<div style="display:flex;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:flex-start">
+        <div style="width:24px;height:24px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px">${log.step_index}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:14px">${icon}</span>
+            <span style="font-weight:600;font-size:13px">${esc(log.step_name)}</span>
+            <span class="badge badge-gray" style="font-size:10px">${esc(log.tool_name)}</span>
+            <span style="font-size:11px;color:${statusColor};margin-left:auto">${log.duration_ms}ms</span>
+          </div>
+          ${outputPreview ? `<div style="font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">输出: ${esc(outputPreview)}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = `<div style="color:var(--danger);padding:12px">日志加载失败: ${esc(String(e))}</div>`;
+  }
+}
+
+// ==================== 知识图谱（修复问题7：tooltip显示完整属性） ====================
+let kgAllNodes = [], kgAllLinks = [], kgSim = null;
+
+async function loadKG() {
+  const svg = document.getElementById('kg-svg');
+  if (!svg) return;
+  svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="#8896a8" font-size="14">加载中...</text>';
+  try {
+    const r = await fetch('/api/kg?limit=300');
+    const d = await r.json();
+    kgAllNodes = d.nodes || [];
+    kgAllLinks = d.links || [];
+    document.getElementById('kg-count').textContent = `${kgAllNodes.length} 节点 · ${kgAllLinks.length} 关系`;
+    renderKG(kgAllNodes, kgAllLinks);
+    buildKGLegend(kgAllNodes);
+    buildKGTypeFilter(kgAllNodes);
+  } catch(e) {
+    svg.innerHTML = `<text x="50%" y="50%" text-anchor="middle" fill="#dc2626" font-size="13">加载失败: ${esc(String(e))}</text>`;
+  }
+}
+
+const KG_COLORS = ['#2563eb','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#db2777','#65a30d'];
+function typeColor(type, types) {
+  const idx = types.indexOf(type);
+  return KG_COLORS[idx % KG_COLORS.length] || '#8896a8';
+}
+
+function buildKGLegend(nodes) {
+  const types = [...new Set(nodes.map(n => n.group || '其他'))];
+  const el = document.getElementById('kg-legend');
+  if (!el) return;
+  el.innerHTML = types.map((t, i) => `
+    <div class="kg-legend-item">
+      <div class="kg-dot" style="background:${KG_COLORS[i%KG_COLORS.length]}"></div>
+      <span>${esc(t)}</span>
+    </div>`).join('');
+}
+
+function filterKG(q) {
+  const typeFilter = (document.getElementById('kg-type-filter')||{}).value || '';
+  if (!q.trim() && !typeFilter) { renderKG(kgAllNodes, kgAllLinks); return; }
+  const lq = q.toLowerCase();
+  const filtered = kgAllNodes.filter(n => {
+    const nameMatch = !lq || n.name.toLowerCase().includes(lq);
+    const typeMatch = !typeFilter || (n.group || '') === typeFilter;
+    return nameMatch && typeMatch;
+  });
+  const ids = new Set(filtered.map(n => n.id));
+  const filteredLinks = kgAllLinks.filter(l => {
+    const sid = typeof l.source === 'object' ? l.source.id : l.source;
+    const tid = typeof l.target === 'object' ? l.target.id : l.target;
+    return ids.has(sid) && ids.has(tid);
+  });
+  renderKG(filtered, filteredLinks);
+  document.getElementById('kg-count').textContent = `${filtered.length}/${kgAllNodes.length} 节点 · ${filteredLinks.length} 关系`;
+}
+
+function filterKGByType(type) {
+  filterKG((document.getElementById('kg-search')||{}).value || '');
+}
+
+function buildKGTypeFilter(nodes) {
+  const sel = document.getElementById('kg-type-filter');
+  if (!sel) return;
+  const types = [...new Set(nodes.map(n => n.group || '其他'))].sort();
+  sel.innerHTML = '<option value="">全部类型</option>' +
+    types.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+}
+
+let kgDisplayLimit = 300;
+function expandKGNodes() {
+  kgDisplayLimit = Math.min(kgDisplayLimit + 200, 2000);
+  fetch(`/api/kg?limit=${kgDisplayLimit}`)
+    .then(r => r.json())
+    .then(d => {
+      kgAllNodes = d.nodes || [];
+      kgAllLinks = d.links || [];
+      buildKGTypeFilter(kgAllNodes);
+      renderKG(kgAllNodes, kgAllLinks);
+      document.getElementById('kg-count').textContent = `${kgAllNodes.length} 节点 · ${kgAllLinks.length} 关系`;
+    });
+}
+
+function resetKGView() {
+  document.getElementById('kg-search').value = '';
+  const sel = document.getElementById('kg-type-filter');
+  if (sel) sel.value = '';
+  document.getElementById('kg-count').textContent = `${kgAllNodes.length} 节点 · ${kgAllLinks.length} 关系`;
+  renderKG(kgAllNodes, kgAllLinks);
+}
+
+function renderKG(nodes, links) {
+  const svg = document.getElementById('kg-svg');
+  if (!svg) return;
+  svg.innerHTML = '';
+  if (nodes.length === 0) {
+    svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="#8896a8" font-size="14">暂无图谱数据，请先上传并解析文档</text>';
+    return;
+  }
+  const W = svg.clientWidth || 900, H = 560;
+  const types = [...new Set(nodes.map(n => n.group || '其他'))];
+  const tooltip = document.getElementById('kg-tooltip');
+
+  // 简单力导向布局（不依赖d3）
+  const nodeMap = {};
+  const ns = nodes.map((n, i) => {
+    const obj = { ...n, x: W/2 + (Math.random()-0.5)*W*0.6, y: H/2 + (Math.random()-0.5)*H*0.6, vx:0, vy:0 };
+    nodeMap[n.id] = obj;
+    return obj;
+  });
+  const ls = links.map(l => ({
+    source: nodeMap[typeof l.source==='object'?l.source.id:l.source],
+    target: nodeMap[typeof l.target==='object'?l.target.id:l.target],
+    relation: l.relation
+  })).filter(l => l.source && l.target);
+
+  // 简单迭代布局
+  for (let iter = 0; iter < 80; iter++) {
+    // 斥力
+    for (let i = 0; i < ns.length; i++) for (let j = i+1; j < ns.length; j++) {
+      const dx = ns[i].x - ns[j].x, dy = ns[i].y - ns[j].y;
+      const d2 = dx*dx + dy*dy + 1;
+      const f = 3000 / d2;
+      ns[i].vx += dx*f; ns[i].vy += dy*f;
+      ns[j].vx -= dx*f; ns[j].vy -= dy*f;
+    }
+    // 引力
+    for (const l of ls) {
+      const dx = l.target.x - l.source.x, dy = l.target.y - l.source.y;
+      const d = Math.sqrt(dx*dx+dy*dy)+1;
+      const f = (d-120)*0.03;
+      l.source.vx += dx/d*f; l.source.vy += dy/d*f;
+      l.target.vx -= dx/d*f; l.target.vy -= dy/d*f;
+    }
+    // 中心引力
+    for (const n of ns) {
+      n.vx += (W/2 - n.x)*0.01; n.vy += (H/2 - n.y)*0.01;
+    }
+    // 更新位置
+    for (const n of ns) {
+      n.x += n.vx*0.5; n.y += n.vy*0.5;
+      n.vx *= 0.7; n.vy *= 0.7;
+      n.x = Math.max(30, Math.min(W-30, n.x));
+      n.y = Math.max(30, Math.min(H-30, n.y));
+    }
+  }
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const g = document.createElementNS(NS, 'g');
+  svg.appendChild(g);
+
+  // 边
+  for (const l of ls) {
+    const line = document.createElementNS(NS, 'line');
+    line.setAttribute('x1', l.source.x); line.setAttribute('y1', l.source.y);
+    line.setAttribute('x2', l.target.x); line.setAttribute('y2', l.target.y);
+    line.setAttribute('stroke', '#cbd5e1'); line.setAttribute('stroke-width', '1.5');
+    line.setAttribute('opacity', '0.7');
+    g.appendChild(line);
+    if (l.relation) {
+      const mx = (l.source.x+l.target.x)/2, my = (l.source.y+l.target.y)/2;
+      const lt = document.createElementNS(NS, 'text');
+      lt.setAttribute('x', mx); lt.setAttribute('y', my);
+      lt.setAttribute('text-anchor','middle'); lt.setAttribute('font-size','9');
+      lt.setAttribute('fill','#94a3b8'); lt.setAttribute('pointer-events','none');
+      lt.textContent = l.relation.length > 8 ? l.relation.slice(0,8)+'…' : l.relation;
+      g.appendChild(lt);
+    }
+  }
+
+  // 节点
+  for (const n of ns) {
+    const color = typeColor(n.group||'其他', types);
+    const circle = document.createElementNS(NS, 'circle');
+    circle.setAttribute('cx', n.x); circle.setAttribute('cy', n.y);
+    circle.setAttribute('r', '10'); circle.setAttribute('fill', color);
+    circle.setAttribute('stroke', '#fff'); circle.setAttribute('stroke-width', '2');
+    circle.style.cursor = 'pointer';
+    // 修复问题7：tooltip显示完整名称+类型+关系数
+    const relCount = ls.filter(l => l.source===n || l.target===n).length;
+    circle.addEventListener('mouseenter', e => {
+      tooltip.style.display = 'block';
+      tooltip.innerHTML = `<div style="font-weight:600;margin-bottom:4px">${esc(n.name)}</div>
+        <div style="color:#64748b">类型：${esc(n.group||'未知')}</div>
+        <div style="color:#64748b">关联关系：${relCount} 条</div>`;
+      tooltip.style.left = (e.clientX+14)+'px'; tooltip.style.top = (e.clientY-10)+'px';
+    });
+    circle.addEventListener('mousemove', e => {
+      tooltip.style.left = (e.clientX+14)+'px'; tooltip.style.top = (e.clientY-10)+'px';
+    });
+    circle.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+    g.appendChild(circle);
+    const label = document.createElementNS(NS, 'text');
+    label.setAttribute('x', n.x); label.setAttribute('y', n.y+22);
+    label.setAttribute('text-anchor','middle'); label.setAttribute('font-size','10');
+    label.setAttribute('fill','#475569'); label.setAttribute('pointer-events','none');
+    // 修复问题7：标签不截断，完整显示（节点少时可读）
+    label.textContent = n.name.length > 12 ? n.name.slice(0,12)+'…' : n.name;
+    g.appendChild(label);
+  }
+
+  // 拖拽+缩放
+  let dragging = false, lastX = 0, lastY = 0;
+  let tx = 0, ty = 0, scale = 1;
+  svg.addEventListener('mousedown', e => { dragging = true; lastX = e.clientX; lastY = e.clientY; });
+  svg.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    tx += e.clientX - lastX; ty += e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    g.setAttribute('transform', `translate(${tx},${ty}) scale(${scale})`);
+  });
+  svg.addEventListener('mouseup', () => { dragging = false; });
+  svg.addEventListener('mouseleave', () => { dragging = false; });
+  svg.addEventListener('wheel', e => {
+    e.preventDefault();
+    scale = Math.max(0.3, Math.min(3, scale - e.deltaY*0.001));
+    g.setAttribute('transform', `translate(${tx},${ty}) scale(${scale})`);
+  }, { passive: false });
+}
+
+// ==================== 智能问答（修复问题5、17） ====================
+function setQAInput(text) {
+  const el = document.getElementById('qa-input');
+  if (el) { el.value = text; el.focus(); }
+}
+
+async function loadQAHistory() {
+  try {
+    const r = await fetch('/api/qa/history?limit=30');
+    const d = await r.json();
+    const history = d.history || [];
+    const el = document.getElementById('qa-history');
+    if (!el) return;
+    if (history.length === 0) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">💬</div><div class="empty-text">暂无问答记录</div><div class="empty-sub">输入问题开始查询</div></div>';
+      return;
+    }
+    el.innerHTML = history.map(h => {
+      const sources = h.sources || [];
+      const srcHtml = sources.length ? `<div class="qa-sources">📚 来源：${sources.map(s=>esc(s.title)).join('、')}</div>` : '';
+      return `<div class="qa-item">
+        <div class="qa-q"><span style="color:var(--primary);font-weight:700;flex-shrink:0">Q</span>${esc(h.query)}</div>
+        <div class="qa-a md-content">${renderMd(h.answer||'')}</div>
+        ${srcHtml}
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">${fmtTime(h.created_at)}</div>
+      </div>`;
+    }).join('');
+  } catch(e) { console.error('loadQAHistory:', e); }
+}
+
+async function doQA() {
+  const q = (document.getElementById('qa-input')||{}).value || '';
+  if (!q.trim()) return;
+  const el = document.getElementById('qa-history');
+  const loadId = 'qa-loading-' + Date.now();
+  const placeholder = `<div class="qa-item" id="${loadId}">
+    <div class="qa-q"><span style="color:var(--primary);font-weight:700;flex-shrink:0">Q</span>${esc(q)}</div>
+    <div class="qa-a" style="color:var(--text3)">🔍 RAG检索中...</div>
+  </div>`;
+  if (el.querySelector('.empty')) el.innerHTML = '';
+  el.insertAdjacentHTML('afterbegin', placeholder);
+  document.getElementById('qa-input').value = '';
+  try {
+    const r = await fetch('/api/qa', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ query: q, top_k: 5, use_rag: true })
+    });
+    const d = await r.json();
+    if (d.error) {
+      const item = document.getElementById(loadId);
+      if (item) item.querySelector('.qa-a').innerHTML = `<span style="color:var(--danger)">${esc(d.error)}</span>`;
+      return;
+    }
+    const sources = d.sources || [];
+    // RAG引用来源（带编号）
+    let srcHtml = '';
+    if (sources.length) {
+      const srcItems = sources.map(s => `<span style="margin-right:8px">[${s.ref||''}] <span style="color:var(--text2)">${esc(s.title)}</span></span>`).join('');
+      srcHtml = `<div class="qa-sources">📚 RAG引用来源：${srcItems}</div>`;
+    }
+    // KG实体
+    const kgHtml = d.kg_entities ? `<div style="font-size:11px;color:var(--text3);margin-top:4px">🔗 知识图谱实体：${esc(d.kg_entities)}</div>` : '';
+    const metaHtml = `<div style="font-size:11px;color:var(--text3);margin-top:4px">trace:${d.trace_id||''} · RAG分块:${d.rag_chunks||0} · ${d.elapsed_ms||0}ms</div>`;
+    const item = document.getElementById(loadId);
+    if (item) item.outerHTML = `<div class="qa-item">
+      <div class="qa-q"><span style="color:var(--primary);font-weight:700;flex-shrink:0">Q</span>${esc(q)}</div>
+      <div class="qa-a md-content">${renderMd(d.answer||'')}</div>
+      ${srcHtml}${kgHtml}${metaHtml}
+    </div>`;
+  } catch(e) {
+    const item = document.getElementById(loadId);
+    if (item) item.querySelector('.qa-a').textContent = '请求失败: ' + e;
+  }
+}
+
+// ==================== 知识库文档（修复问题4、14） ====================
+function debounceSearch(q) {
+  clearTimeout(State.searchTimer);
+  State.searchTimer = setTimeout(() => {
+    State.docsSearchQuery = q;
+    State.docsPage = 1;
+    loadDocs();
+  }, 400);
+}
+
+async function loadDocs() {
+  const el = document.getElementById('docs-list');
+  const countEl = document.getElementById('docs-count');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--text3);padding:20px;text-align:center">加载中...</div>';
+  try {
+    const q = State.docsSearchQuery;
+    const offset = (State.docsPage - 1) * State.docsPageSize;
+    let docs = [], total = 0;
+    if (q) {
+      const r = await fetch('/api/docs/search', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ query: q })
+      });
+      const d = await r.json();
+      docs = d.data || [];
+      total = docs.length;
+    } else {
+      const r = await fetch(`/api/docs/list?limit=${State.docsPageSize}&offset=${offset}`);
+      const d = await r.json();
+      docs = d.docs || [];
+      const r2 = await fetch('/api/stats');
+      const d2 = await r2.json();
+      total = d2.documents || 0;
+    }
+    State.docsTotalCount = total;
+    if (countEl) countEl.textContent = `共 ${total} 篇`;
+    if (docs.length === 0) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">暂无文档</div></div>';
+      // 修复问题14：搜索无结果时也渲染分页（清空）
+      renderPagination(q ? 0 : total);
+      return;
+    }
+    el.innerHTML = `<table>
+      <thead><tr><th>文档标题</th><th>类型</th><th>字符数</th><th>入库时间</th><th>操作</th></tr></thead>
+      <tbody>${docs.map(doc => `<tr style="cursor:pointer" onclick="openDocModal(${doc.id})">
+        <td style="font-weight:500;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(doc.title||'未命名')}</td>
+        <td><span class="badge badge-blue">${esc(doc.doc_type||'文档')}</span></td>
+        <td style="color:var(--text3)">${doc.chars ? doc.chars.toLocaleString() : '—'}</td>
+        <td style="color:var(--text3);font-size:12px">${fmtTime(doc.created_at)}</td>
+        <td><button class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="event.stopPropagation();openDocModal(${doc.id})">查看</button></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+    // 修复问题14：搜索时不显示分页，清空搜索后恢复
+    renderPagination(q ? 0 : total);
+  } catch(e) {
+    el.innerHTML = `<div style="color:var(--danger);padding:20px">加载失败: ${esc(String(e))}</div>`;
+  }
+}
+
+function renderPagination(total) {
+  const el = document.getElementById('docs-pagination');
+  if (!el) return;
+  const pages = Math.ceil(total / State.docsPageSize);
+  if (pages <= 1) { el.innerHTML = ''; return; }
+  let html = '';
+  if (State.docsPage > 1) html += `<button class="page-btn" onclick="goPage(${State.docsPage-1})">‹ 上一页</button>`;
+  for (let i = 1; i <= pages; i++) {
+    if (i === 1 || i === pages || Math.abs(i - State.docsPage) <= 2) {
+      html += `<button class="page-btn ${i===State.docsPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    } else if (Math.abs(i - State.docsPage) === 3) {
+      html += `<span style="color:var(--text3);padding:0 4px">…</span>`;
+    }
+  }
+  if (State.docsPage < pages) html += `<button class="page-btn" onclick="goPage(${State.docsPage+1})">下一页 ›</button>`;
+  el.innerHTML = html;
+}
+
+function goPage(p) { State.docsPage = p; loadDocs(); }
+
+// ==================== 文档详情弹窗（修复问题4） ====================
+async function openDocModal(docId) {
+  const modal = document.getElementById('doc-modal');
+  const titleEl = document.getElementById('modal-doc-title');
+  const metaEl = document.getElementById('modal-doc-meta');
+  const contentEl = document.getElementById('modal-doc-content');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  titleEl.textContent = '加载中...';
+  metaEl.innerHTML = '';
+  contentEl.innerHTML = '<div style="color:var(--text3);text-align:center;padding:40px">加载中...</div>';
+  try {
+    const r = await fetch('/api/docs/' + docId);
+    const d = await r.json();
+    if (d.error) { contentEl.innerHTML = `<div style="color:var(--danger)">${esc(d.error)}</div>`; return; }
+    titleEl.textContent = d.title || '未命名文档';
+    metaEl.innerHTML = [
+      d.doc_type ? `<span class="badge badge-blue">${esc(d.doc_type)}</span>` : '',
+      d.source_type ? `<span class="badge badge-cyan">${esc(d.source_type)}</span>` : '',
+      d.created_at ? `<span style="font-size:12px;color:var(--text3)">入库时间：${fmtTime(d.created_at)}</span>` : '',
+      d.content ? `<span style="font-size:12px;color:var(--text3)">${d.content.length.toLocaleString()} 字符</span>` : ''
+    ].filter(Boolean).join('');
+    contentEl.innerHTML = renderMd(d.content || '（无内容）');
+  } catch(e) {
+    contentEl.innerHTML = `<div style="color:var(--danger)">加载失败: ${esc(String(e))}</div>`;
+  }
+}
+
+function closeDocModal() {
+  const modal = document.getElementById('doc-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// ==================== 清空问答历史 ====================
+function clearQAHistory() {
+  if (!confirm('确认清空所有问答记录？')) return;
+  const el = document.getElementById('qa-history');
+  if (el) el.innerHTML = '<div class="empty"><div class="empty-icon">💬</div><div class="empty-text">暂无问答记录</div><div class="empty-sub">输入问题开始查询</div></div>';
+}
+
+// ==================== 初始化 ====================
+document.addEventListener('DOMContentLoaded', () => {
+  setupDropZone();
+  loadStats();
+  loadRecentDocs();
+  setInterval(loadStats, 30000);
+});
+</script>
+</body>
+</html>
