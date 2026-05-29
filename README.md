@@ -1,111 +1,144 @@
-# 惯导智衡 · MinerU 赛道二 Data Agent
+# 惯导智衡 · MinerU 赛道二 Data Agent 参赛材料
 
-> 面向惯性产品检测领域的智能 Data Agent 系统，基于 MinerU 云端 API 实现从 PDF 检测报告到结构化知识的全链路自动化。
-
-**🏆 参赛赛道**：MinerU 2026 大赛 · 赛道二 · Data Agent 数据智能体评测  
-**📂 仓库**：[github.com/insruler/MinerU-Track2-Agent](https://github.com/insruler/MinerU-Track2-Agent)  
-**🌐 在线演示**：[http://49.232.174.229:7883](http://49.232.174.229:7883)  
-**📖 API文档**：[http://49.232.174.229:7883/api/docs](http://49.232.174.229:7883/api/docs)  
-**🔖 版本**：v6.0 · 2026-05-27
+**队伍**：惯性产品检测实验室  
+**赛道**：MinerU 2026 · 赛道二 · Data Agent 数据智能体评测  
+**仓库**：https://github.com/insruler/MinerU-Track2-Agent  
+**演示**：http://49.232.174.229:7883  
+**版本**：v6.0 · 2026-05-27
 
 ---
 
-## 一、项目成果
+## 提交材料清单
 
-### 知识库规模（截至 2026-05-27）
+| 文件 | 说明 |
+|------|------|
+| `README.md` | 本文件，完整项目说明 |
+| `技术报告.md` | 系统设计方案、核心技术、架构图 |
+| `部署运行说明.md` | 部署指南、环境要求、API文档 |
+| `运行日志与测试结果.md` | 接口测试、日志样例、任务示例 |
+| `惯导智衡_风格A_靛蓝瓷.pptx` | 参赛PPT（风格A：电子杂志风） |
+| `惯导智衡_风格B_瑞士IKB.pptx` | 参赛PPT（风格B：国际主义风） |
+| `惯导智衡_演示视频_v60_字幕版.mp4` | 演示视频（字幕版） |
+| `惯导智衡_演示视频_v60_配音版.mp4` | 演示视频（配音版） |
+
+---
+
+## 一、成果总览
+
+### 知识库规模
 
 | 指标 | 数值 |
 |------|------|
 | 已解析文档 | **356 篇** |
-| RAG 分块总数 | **28,741 块** |
+| RAG 分块总数 | **28,741 块**（512字符/块，128字符重叠）|
 | 知识图谱实体 | **2,314 个** |
 | 知识图谱关系 | **2,245 条** |
-| 接口测试通过率 | **10/10 (100%)** |
 | 系统运行时长 | **7天+** |
+| 接口测试通过率 | **10/10 (100%)** |
 
-### 五维评分覆盖
+### 五维评分对照
 
-| 维度 | 满分 | 核心实现 |
-|------|------|----------|
-| 文档理解 | 20分 | TF-IDF+BM25 双路检索，28,741 chunks，引用溯源 |
-| 技术创新 | 15分 | ReAct+CoT 思维链，知识图谱，文档类型感知 |
-| Agent执行 | 30分 | 异步 ReAct，6 个注册工具，任务控制 |
-| 系统稳定性 | 20分 | systemd 守护，Correlation-ID 全链路追踪 |
-| 开源价值 | 15分 | 完整代码 + 详细文档 + PPT + 演示视频 |
+| 评分维度 | 满分 | 核心实现 |
+|----------|------|----------|
+| 文档理解 | 20分 | 真正RAG（28,741 chunks），TF-IDF+BM25双路检索，引用溯源 |
+| 技术创新 | 15分 | ReAct+CoT思维链，知识图谱（2,314实体），文档类型感知 |
+| Agent执行 | 30分 | 异步ReAct循环，6个注册工具，任务取消/暂停/恢复控制 |
+| 系统稳定性 | 20分 | systemd守护（自动重启），Correlation-ID全链路追踪，Pydantic校验 |
+| 开源价值 | 15分 | 完整开源代码，详细文档，PPT，演示视频，可直接验证 |
 
----
-
-## 二、技术架构
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│                     前端 Web UI (index.html)                    │
-│         总览 · PDF解析 · Agent交互 · 知识图谱 · RAG问答        │
-└──────────────────────────┬───────────────────────────────────┘
-                           │  HTTP REST API (28个接口)
-┌──────────────────────────▼───────────────────────────────────┐
-│                   FastAPI 后端 (app.py)                        │
-│                                                              │
-│  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌──────────┐ │
-│  │ MinerU     │ │  知识图谱   │ │  ReAct     │ │   RAG    │ │
-│  │ 云端解析   │ │  构建模块   │ │  Agent     │ │   问答   │ │
-│  └────────────┘ └────────────┘ └────────────┘ └──────────┘ │
-└───────────────────────────┬──────────────────────────────────┘
-                            │
-          ┌─────────────────┼─────────────────┐
-          ▼                 ▼                 ▼
-   ┌─────────────┐  ┌───────────┐  ┌──────────────────┐
-   │ MinerU 云端  │  │  SQLite   │  │  MiniMax LLM API  │
-   │ API (PDF)    │  │  知识库    │  │  (MiniMax-M2.7)   │
-   └─────────────┘  └───────────┘  └─────────────────────┘
-```
-
-### 核心模块
-
-#### 1. ReAct Agent（赛道核心）
-采用 **Reason-Act-Observe** 循环架构，支持复杂多步骤任务自动执行：
-- **Reason**：Chain-of-Thought 推理，明确当前状态和目标
-- **Act**：选择并调用6个注册工具之一
-- **Observe**：观察工具返回结果，决定下一步或输出最终答案
-
-已注册工具：
-| 工具名 | 功能 |
-|--------|------|
-| `search_knowledge_base` | RAG 分块检索（BM25+TF-IDF） |
-| `get_kg_entities` | 知识图谱实体查询 |
-| `get_kg_relations` | 实体关系查询 |
-| `extract_structured_fields` | 结构化字段抽取 |
-| `call_llm` | LLM 通用推理调用 |
-| `get_stats` | 系统统计查询 |
-
-#### 2. RAG 检索增强问答
-- **分块策略**：512 字符/块，128 字符重叠，最小 50 字符过滤
-- **检索流程**：TF-IDF 向量化 → 候选块召回 → BM25 重排序 → Top-K → LLM 生成
-- **引用溯源**：每个回答标注文档来源，可追溯到具体检测报告
-
-#### 3. 惯性检测领域知识图谱
-覆盖六类惯性产品核心实体与关系：
-- 惯性器件：陀螺仪、加速度计、IMU、惯性导航系统
-- 测试参数：标度因数、零偏稳定性、随机游走、Allan方差
-- 测试方法：角振动试验、温度循环、冲击振动
-- 标准规范：GJB系列、QJ系列、YT系列
-
-#### 4. MinerU 云端高精度解析
-- **API端点**：`https://mineru.net/api/v4`
-- **支持格式**：PDF / DOCX / PPTX / XLSX
-- **已处理**：300+ PDF 检测报告 → 356篇结构化文档
+**总分目标：95分+**
 
 ---
 
-## 三、快速部署（5分钟可复现）
+## 二、系统架构
 
-### 环境要求
-- Python 3.10+
-- 2GB+ 内存
-- MiniMax API Key
-- MinerU Cloud API Key（PDF解析用，可选）
+```
+用户请求
+    │
+    ▼
+FastAPI 接口层（Pydantic校验 + Correlation-ID追踪）
+    │
+    ├─── ReAct Agent（Reason-Act-Observe循环）
+    │       ├── CoT 思维链规划
+    │       ├── 6个注册工具（搜索/图谱/抽取/LLM/统计）
+    │       └── 异步执行 + 任务控制
+    │
+    ├─── RAG 问答引擎
+    │       ├── TF-IDF 向量化（28,741 chunks）
+    │       ├── BM25 重排序
+    │       └── 引用溯源回答
+    │
+    ├─── 知识图谱（2,314实体 · 2,245关系）
+    │       └── D3.js 力导向可视化
+    │
+    └─── MinerU 云端 PDF 解析
+            ├── API端点：https://mineru.net/api/v4
+            └── 支持：PDF/DOCX/PPTX/XLSX
+```
 
-### 步骤
+---
+
+## 三、核心功能演示
+
+### 3.1 RAG 智能问答
+
+**示例问题**：什么是标度因数？
+
+**系统回答**（带引用溯源）：
+> **标度因数（Scale Factor）**是惯性器件（陀螺仪、加速度计）输出与输入之间的比例系数，反映了传感器的灵敏度特性。
+> - 陀螺仪：输入角速率与输出脉冲率的比例系数
+> - 加速度计：输入加速度与输出电信号的比例系数
+> **来源**：[检测报告 JCBG01 系列]
+
+### 3.2 ReAct Agent 多步任务
+
+**示例任务**：分析 JCBG01-20260318-001 报告中的标度因数试验结果
+
+**Agent 执行过程**：
+```
+Step 1 → Reason：需要先搜索相关检测报告
+Step 1 → Act：search_knowledge_base（标度因数试验）
+Step 1 → Observe：找到3篇相关文档
+Step 2 → Reason：需要获取知识图谱中的实体关系
+Step 2 → Act：get_kg_entities（标度因数）
+Step 2 → Observe：陀螺仪→标度因数→精度等级
+Step 3 → Reason：综合信息，生成分析报告
+Step 3 → Act：call_llm（综合回答）
+Step 3 → Final Answer：输出完整分析结果
+```
+
+### 3.3 知识图谱可视化
+
+- 2,314 个实体节点，涵盖陀螺仪、加速度计、IMU、测试参数等
+- D3.js 力导向图，支持拖拽、缩放、节点检索
+- 实体类型：惯性器件、测试参数、测试方法、标准规范
+
+---
+
+## 四、接口测试结果
+
+### 测试时间：2026-05-27 | 服务：http://49.232.174.229:7883
+
+| # | 接口 | 方法 | 状态 | 关键指标 |
+|---|------|------|------|----------|
+| 1 | `/api/health` | GET | ✅ PASS | status=healthy |
+| 2 | `/api/ready` | GET | ✅ PASS | status=ready |
+| 3 | `/api/stats` | GET | ✅ PASS | chunks=28741 |
+| 4 | `/api/documents` | GET | ✅ PASS | total=356 |
+| 5 | `/api/knowledge/search` | POST | ✅ PASS | results≥3 |
+| 6 | `/api/qa`（query字段）| POST | ✅ PASS | answer有效 |
+| 7 | `/api/qa`（question字段）| POST | ✅ PASS | 兼容性验证 |
+| 8 | `/api/agent/plan` | POST | ✅ PASS | CoT规划有效 |
+| 9 | `/api/agent/execute` | POST | ✅ PASS | 异步执行启动 |
+| 10 | `/api/kg` | GET | ✅ PASS | 2,314实体 |
+
+**通过率：10/10 (100%)**
+
+---
+
+## 五、部署与运行
+
+### 快速启动
 
 ```bash
 # 1. 克隆仓库
@@ -118,7 +151,6 @@ pip install -r requirements.txt
 # 3. 配置环境变量
 export MINIMAX_API_KEY="your_key"
 export MINIMAX_GROUP_ID="your_group_id"
-export MINERU_API_KEY="your_mineru_key"   # 可选
 
 # 4. 启动服务
 python3 app.py
@@ -131,116 +163,97 @@ python3 app.py
 sudo cp deploy/insruler.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now insruler
-sudo systemctl status insruler
 ```
 
-### Docker 部署
+### 在线验证
 
-```bash
-docker build -t mineru-track2-agent .
-docker run -d -p 7883:7883 \
-  -e MINIMAX_API_KEY=your_key \
-  -e MINIMAX_GROUP_ID=your_group_id \
-  --name mineru-agent mineru-track2-agent
-```
-
----
-
-## 四、API 接口
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/health` | 健康检查 |
-| GET | `/api/ready` | 就绪检查（依赖项验证） |
-| GET | `/api/stats` | 知识库统计（文档/实体/chunks数） |
-| GET | `/api/documents` | 文档列表（分页） |
-| GET | `/api/documents/{id}` | 单篇文档详情 |
-| POST | `/api/parse/batch` | 批量 PDF 解析 |
-| POST | `/api/qa` | RAG 智能问答 |
-| GET | `/api/knowledge/search` | 知识库搜索 |
-| POST | `/api/agent/plan` | CoT 任务规划 |
-| POST | `/api/agent/execute` | ReAct 同步执行 |
-| POST | `/api/agent/run` | ReAct 异步执行 |
-| GET | `/api/agent/result` | 异步结果查询 |
-| POST | `/api/agent/control` | 任务控制（取消/暂停/恢复） |
-| GET | `/api/kg` | 知识图谱数据 |
-| GET | `/api/jobs` | 解析任务列表 |
-
-完整文档：http://49.232.174.229:7883/api/docs
-
----
-
-## 五、系统稳定性
-
-### 守护进程
-systemd 托管，崩溃后5秒自动重启，已稳定运行7天+。
-
-### 全链路追踪
-每个请求携带 `Correlation-ID`，贯穿：
-```
-Request → Middleware → Handler → Tool → LLM → Response
-```
-
-### 参数校验
-Pydantic v2 模型，支持字段别名兼容：
-- `query` / `question` 均可用
-- `query` / `task` 均可用
-
-### 异步执行
-```
-POST /api/agent/execute → 立即返回 trace_id
-GET  /api/agent/result?trace_id=xxx → 轮询结果
-```
+直接访问 http://49.232.174.229:7883 使用完整功能，无需本地部署。
 
 ---
 
 ## 六、技术栈
 
-| 层次 | 技术 |
-|------|------|
-| 后端 | Python 3.10 · FastAPI · Pydantic v2 · SQLite |
-| AI | MiniMax LLM (M2.7) · MinerU Cloud API |
-| 前端 | 原生 JS · D3.js · 响应式设计 |
-| 运维 | systemd · RotatingFileHandler |
+| 层次 | 技术选型 |
+|------|----------|
+| 后端框架 | Python 3.10 · FastAPI · Pydantic v2 |
+| 数据库 | SQLite（知识库 + 图谱） |
+| AI 能力 | MiniMax LLM (M2.7) · MinerU Cloud API |
+| 前端 | 原生 JavaScript · D3.js |
+| 运维 | systemd · RotatingFileHandler（日志轮转）|
 
 ---
 
-## 七、目录结构
+## 七、版本历史
 
-```
-MinerU-Track2-Agent/
-├── app.py                   # 主程序（FastAPI + Agent + RAG）
-├── src/
-│   └── index.html           # 前端界面
-├── data/
-│   └── knowledge.db         # SQLite 知识库
-├── docs/
-│   ├── 技术报告.md          # 详细技术方案
-│   ├── 部署运行说明.md      # 部署指南
-│   └── 运行日志与测试结果.md # 测试记录
-├── deploy/
-│   └── insruler.service     # systemd 配置
-├── logs/                    # 日志目录（自动轮转）
-├── requirements.txt
-└── README.md
-```
+| 版本 | 日期 | 重大变更 |
+|------|------|----------|
+| v3.2 | 2026-05-18 | 初始版本，基础Agent+知识图谱 |
+| v4.0 | 2026-05-21 | 对标评分标准全面重构 |
+| v5.0 | 2026-05-22 | ReAct Agent + 真正RAG + systemd守护 |
+| v5.1 | 2026-05-22 | asyncio修复，14项缺陷修复 |
+| v6.0 | 2026-05-27 | 接口兼容性，chunks统计，路由别名优化 |
 
 ---
 
-## 八、版本历史
+## 八、评分维度详细说明
 
-| 版本 | 日期 | 主要变更 |
-|------|------|---------|
-| v3.2 | 2026-05-18 | 初始版本，基础 Agent + 知识图谱 |
-| v4.0 | 2026-05-21 | 对标评分标准全面升级 |
-| v5.0 | 2026-05-22 | ReAct Agent + 真正 RAG + systemd |
-| v5.1 | 2026-05-22 | asyncio 修复，14项缺陷修复 |
-| v6.0 | 2026-05-27 | 接口兼容性修复，chunks统计，路由别名 |
+### 文档理解（20分）
+- ✅ 28,741 chunks 真实RAG检索
+- ✅ TF-IDF + BM25 双路检索
+- ✅ 引用溯源，每个答案可追溯
+- ✅ 356篇文档全覆盖
+
+### 技术创新（15分）
+- ✅ ReAct + CoT 思维链
+- ✅ 领域知识图谱（2,314实体）
+- ✅ 文档类型感知Schema抽取
+- ✅ 异步任务执行架构
+
+### Agent执行（30分）
+- ✅ 完整ReAct循环（Reason-Act-Observe）
+- ✅ 6个注册工具，工具模糊匹配
+- ✅ 任务取消/暂停/恢复控制
+- ✅ 异步非阻塞执行
+
+### 系统稳定性（20分）
+- ✅ systemd守护，崩溃自动重启
+- ✅ Correlation-ID全链路追踪
+- ✅ Pydantic v2参数校验
+- ✅ 日志轮转，磁盘空间管理
+
+### 开源价值（15分）
+- ✅ GitHub公开仓库
+- ✅ 完整代码+文档+PPT+视频
+- ✅ 服务可直接访问验证
+- ✅ README+部署指南+技术报告全套材料
 
 ---
 
-## 九、许可证
+## 九、参赛PPT说明
 
-MIT License · 惯性产品检测实验室 · 2026
+提供两种风格PPT，均为12页：
 
-**联系方式**：insruler @ GitHub
+**风格A · 靛蓝瓷（电子杂志风）**
+- 配色：深靛蓝（#0a1f3d）+ 暖白（#f8f6f0）+ 中国红（#c0362c）
+- 特点：衬线字体大标题，数据大字报，章节幕封，装饰色块
+
+**风格B · 瑞士IKB（国际主义风）**
+- 配色：白底（#fafaf8）+ IKB深蓝（#002FA7）+ 灰阶
+- 特点：无衬线字体，几何网格，简洁图表，信息密度高
+
+两套PPT均完整覆盖：核心指标、技术架构、流水线、RAG、RAG问答、评分体系、技术演进、知识图谱、核心价值、开源部署。
+
+---
+
+## 十、联系与验证
+
+- **GitHub**：https://github.com/insruler/MinerU-Track2-Agent
+- **在线演示**：http://49.232.174.229:7883
+- **API文档**：http://49.232.174.229:7883/api/docs
+- **健康检查**：http://49.232.174.229:7883/api/health
+
+评委会员可直接访问上述地址验证系统能力，或克隆仓库本地复现。
+
+---
+
+*惯导智衡 · MinerU 赛道二 · 2026*
