@@ -8,7 +8,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#f5f7fa;--bg2:#eef1f6;--card:#fff;--border:#e2e8f0;
-  --text:#1a2332;--text2:#4a5568;--text3:#8896a8;
+  --text:#1a2332;--text1:#1a2332;--text2:#4a5568;--text3:#8896a8;
   --primary:#2563eb;--primary-light:#eff6ff;--primary-dark:#1d4ed8;
   --success:#059669;--success-bg:#ecfdf5;
   --warning:#d97706;--warning-bg:#fffbeb;
@@ -176,7 +176,7 @@ footer{text-align:center;padding:32px;color:var(--text3);font-size:12px;border-t
       <div class="stat"><div class="stat-icon si-blue">📄</div><div class="stat-body"><div class="stat-num" id="s-docs"><span class="stat-loading">…</span></div><div class="stat-label">知识文档</div></div></div>
       <div class="stat"><div class="stat-icon si-purple">🔗</div><div class="stat-body"><div class="stat-num" id="s-entities"><span class="stat-loading">…</span></div><div class="stat-label">实体节点</div></div></div>
       <div class="stat"><div class="stat-icon si-green">↔️</div><div class="stat-body"><div class="stat-num" id="s-relations"><span class="stat-loading">…</span></div><div class="stat-label">关系连接</div></div></div>
-      <div class="stat"><div class="stat-icon si-cyan">⚙️</div><div class="stat-body"><div class="stat-num" id="s-jobs"><span class="stat-loading">…</span></div><div class="stat-label">解析任务</div></div></div>
+      <div class="stat"><div class="stat-icon si-cyan">⚙️</div><div class="stat-body"><div class="stat-num" id="s-jobs"><span class="stat-loading">…</span></div><div class="stat-label">已完成解析</div></div></div>
     </div>
     <div class="flow-steps" id="flow-steps">
       <div class="flow-step" id="fs1"><div class="fs-num">1</div><div class="fs-text">上传PDF报告</div></div>
@@ -263,7 +263,7 @@ footer{text-align:center;padding:32px;color:var(--text3);font-size:12px;border-t
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn btn-primary" onclick="doPlan()" style="flex:1;min-width:120px" id="plan-btn">📋 制定计划（CoT）</button>
-        <button class="btn btn-secondary" onclick="doExecute()" style="flex:1;min-width:120px" id="exec-btn" disabled>▶️ 执行计划</button>
+        <button class="btn btn-secondary" onclick="doExecute()" style="flex:1;min-width:120px" id="exec-btn" disabled title="请先点击「制定计划」生成CoT计划，再执行">▶️ 执行计划</button>
         <button class="btn btn-primary" onclick="doAgentRun()" style="flex:1;min-width:120px;background:var(--success)" id="run-btn">🚀 一键ReAct执行</button>
         <button class="btn btn-secondary" onclick="cancelAgent()" id="cancel-btn" style="display:none;background:var(--danger);color:#fff">⏹ 取消任务</button>
         <button class="btn btn-secondary" onclick="clearAgent()">清空</button>
@@ -325,11 +325,12 @@ footer{text-align:center;padding:32px;color:var(--text3);font-size:12px;border-t
     </div>
     <div class="card">
       <div class="card-title">❓ 提问</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
         <span style="font-size:12px;color:var(--text3);align-self:center">示例：</span>
         <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="setQAInput('陀螺仪零偏稳定性的检测标准是什么？')">零偏稳定性标准</button>
         <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="setQAInput('惯性测量单元的主要技术参数有哪些？')">IMU技术参数</button>
         <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="setQAInput('加速度计标度因数的测试方法是什么？')">标度因数测试</button>
+        <button class="btn btn-danger" style="font-size:12px;padding:5px 12px;margin-left:auto" onclick="clearQAHistory()">🗑 清空历史</button>
       </div>
       <div style="display:flex;gap:10px">
         <input type="text" class="input" id="qa-input" placeholder="输入问题，按 Enter 或点击查询..." onkeydown="if(event.key==='Enter')doQA()">
@@ -358,7 +359,7 @@ footer{text-align:center;padding:32px;color:var(--text3);font-size:12px;border-t
     </div>
   </div>
 </main>
-<footer>惯导智衡 · MinerU 2026大赛赛道二 · Data Agent v3.2 · 惯性产品检测实验室</footer>
+<footer>惯导智衡 · MinerU 2026大赛赛道二 · Data Agent v6.0 · 惯性产品检测实验室</footer>
 
 <!-- 文档详情弹窗 -->
 <div class="modal-overlay" id="doc-modal" style="display:none" onclick="if(event.target===this)closeDocModal()">
@@ -405,7 +406,22 @@ function fmtTime(s) { if (!s) return '—'; return s.slice(0,16).replace('T',' '
 function renderMd(text) {
   if (!text) return '';
   let s = String(text);
-  // 转义HTML
+  // 如果内容包含HTML标签（如MinerU解析的表格），直接返回，不做转义
+  if (/<table|<tr|<td|<th|<div|<p>/.test(s)) {
+    // 仅做基本的Markdown处理，不转义已有HTML
+    s = s.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+    s = s.replace(/^## (.+)$/gm,'<h2>$1</h2>');
+    s = s.replace(/^# (.+)$/gm,'<h1>$1</h1>');
+    s = s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+    s = s.replace(/\*(.+?)\*/g,'<em>$1</em>');
+    s = s.replace(/`([^`]+)`/g,'<code>$1</code>');
+    // 给表格加样式
+    s = s.replace(/<table>/g,'<table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:12px">');
+    s = s.replace(/<td/g,'<td style="padding:6px 10px;border:1px solid var(--border)"');
+    s = s.replace(/<th/g,'<th style="padding:6px 10px;border:1px solid var(--border);background:var(--bg);font-weight:600"');
+    return s;
+  }
+  // 纯文本Markdown处理
   s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   // 标题
   s = s.replace(/^### (.+)$/gm,'<h3>$1</h3>');
@@ -471,7 +487,7 @@ async function loadStats() {
     document.getElementById('s-docs').textContent = fmtNum(d1.documents || 0);
     document.getElementById('s-entities').textContent = fmtNum(d1.entities || 0);
     document.getElementById('s-relations').textContent = fmtNum(d1.relations || 0);
-    document.getElementById('s-jobs').textContent = fmtNum(d2.total || 0);
+    document.getElementById('s-jobs').textContent = fmtNum(d2.done || 0);
     // 工具链展示
     if (r3.ok) {
       const d3 = await r3.json();
@@ -617,6 +633,18 @@ async function pollJobStatus(jobId) {
       const btn = document.getElementById('batch-upload-btn');
       if (btn) { btn.disabled = false; btn.textContent = '🚀 开始解析'; }
       loadStats();
+      // 解析完成后显示引导提示
+      if (done > 0) {
+        const guideEl = document.getElementById('parse-guide-tip');
+        if (!guideEl) {
+          const tip = document.createElement('div');
+          tip.id = 'parse-guide-tip';
+          tip.style.cssText = 'margin-top:16px;padding:14px 18px;background:var(--success-bg);border:1px solid #a7f3d0;border-radius:10px;display:flex;align-items:center;gap:12px;font-size:13px';
+          tip.innerHTML = `<span style="font-size:20px">✅</span><div style="flex:1">解析完成！${done} 个文件已入库。</div><button class="btn btn-primary" onclick="showSection('qa',document.querySelectorAll('.nav-item')[4])">💬 去问答 →</button><button class="btn btn-secondary" onclick="showSection('kg',document.querySelectorAll('.nav-item')[3])">🔗 查看图谱 →</button>`;
+          const card = document.querySelector('#sec-parse .card:last-child');
+          if (card) card.appendChild(tip);
+        }
+      }
     }
   } catch(e) { console.error('poll error:', e); }
 }
@@ -837,8 +865,8 @@ async function doAgentRun() {
           runBtn.textContent = '🚀 一键ReAct执行';
           output.innerHTML += '<div style="color:var(--danger)">轮询超时，请查看追踪日志</div>';
         } else {
-          // 更新进度提示
-          output.innerHTML = `<div style="color:var(--text3)">🔄 trace:${agentTraceId} · 执行中 (${pollCount*3}s)...</div>`;
+          // 更新进度提示（不覆盖已有内容）
+          if (meta) meta.textContent = `⏳ ReAct运行中 · trace:${agentTraceId} · ${pollCount*3}s...`;
         }
       } catch(e) { /* 忽略轮询错误 */ }
     }, 3000);
@@ -1354,6 +1382,13 @@ async function openDocModal(docId) {
 function closeDocModal() {
   const modal = document.getElementById('doc-modal');
   if (modal) modal.style.display = 'none';
+}
+
+// ==================== 清空问答历史 ====================
+function clearQAHistory() {
+  if (!confirm('确认清空所有问答记录？')) return;
+  const el = document.getElementById('qa-history');
+  if (el) el.innerHTML = '<div class="empty"><div class="empty-icon">💬</div><div class="empty-text">暂无问答记录</div><div class="empty-sub">输入问题开始查询</div></div>';
 }
 
 // ==================== 初始化 ====================

@@ -1,0 +1,341 @@
+<!-- SLIDES START -->
+
+<!-- P1: 封面 -->
+<section class="slide accent" data-layout="SWISS-COVER-ASCII" data-animate="hero">
+  <div class="canvas-card">
+    <canvas class="ascii-bg" aria-hidden="true"></canvas>
+    <div class="chrome-min">
+      <div class="l">惯导智衡 · MinerU 2026</div>
+      <div class="r">SS · 25.05 · 01 / 10</div>
+    </div>
+    <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr auto;gap:2.6vh">
+      <div data-anim="kicker" class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em">DATA AGENT · TRACK II</div>
+      <h1 data-anim="title" style="align-self:center;font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(9.6vw,16vh);line-height:.94;letter-spacing:-.025em;color:#fff">惯导<span style="font-style:italic;font-weight:300">智衡</span></h1>
+      <div data-anim="bottom" style="display:grid;grid-template-rows:auto auto;gap:1.6vh;border-top:1px solid rgba(255,255,255,.22);padding-top:2vh">
+        <div data-anim="lead" class="lead" style="max-width:52ch;color:rgba(255,255,255,.86)">基于 MinerU 解析与大模型的惯性产品检测智能体</div>
+        <div style="display:flex;justify-content:space-between;align-items:end">
+          <div class="t-meta" style="color:rgba(255,255,255,.6)">北京航天控制仪器研究所 · 2026.05</div>
+          <div class="t-meta" style="color:rgba(255,255,255,.6)">→ swipe / arrow keys</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- P2: 系统架构 S04 -->
+<section class="slide light" data-layout="S04" data-animate="grid-reveal">
+  <div class="canvas-card">
+    <div class="chrome-min"><div class="l">惯导智衡</div><div class="r">02 / 10</div></div>
+    <div style="display:grid;grid-template-rows:auto 1fr;gap:3vh;flex:1">
+      <div>
+        <div class="t-cat" style="margin-bottom:1.2vh">SYSTEM ARCHITECTURE</div>
+        <h2 class="h-xl" style="font-size:min(4.2vw,7.2vh);font-weight:200">系统架构</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2.4vw;align-content:start">
+        <div class="card-fill" style="padding:3vh 2vw">
+          <div class="t-meta" style="margin-bottom:1vh">01</div>
+          <h3 style="font-size:max(16px,1.2vw);font-weight:500;margin-bottom:1vh">MinerU 解析层</h3>
+          <p style="font-size:max(14px,1vw);opacity:.7;line-height:1.6">PDF/DOCX/PPTX 多格式，VLM 视觉语言模型驱动</p>
+        </div>
+        <div class="card-fill" style="padding:3vh 2vw">
+          <div class="t-meta" style="margin-bottom:1vh">02</div>
+          <h3 style="font-size:max(16px,1.2vw);font-weight:500;margin-bottom:1vh">知识图谱 + RAG</h3>
+          <p style="font-size:max(14px,1vw);opacity:.7;line-height:1.6">TF-IDF 分块 + BM25 重排序 + 引用溯源</p>
+        </div>
+        <div class="card-fill" style="padding:3vh 2vw">
+          <div class="t-meta" style="margin-bottom:1vh">03</div>
+          <h3 style="font-size:max(16px,1.2vw);font-weight:500;margin-bottom:1vh">ReAct Agent</h3>
+          <p style="font-size:max(14px,1vw);opacity:.7;line-height:1.6">任务规划 + 工具调用 + 结果验证</p>
+        </div>
+<!-- SWISS_PLACEHOLDER_1 -->
+        <div class="card-fill" style="padding:3vh 2vw">
+          <div class="t-meta" style="margin-bottom:1vh">04</div>
+          <h3 style="font-size:max(16px,1.2vw);font-weight:500;margin-bottom:1vh">FastAPI 接口</h3>
+          <p style="font-size:max(14px,1vw);opacity:.7;line-height:1.6">10 个 RESTful 端点，Pydantic 校验</p>
+        </div>
+        <div class="card-fill" style="padding:3vh 2vw">
+          <div class="t-meta" style="margin-bottom:1vh">05</div>
+          <h3 style="font-size:max(16px,1.2vw);font-weight:500;margin-bottom:1vh">领域词典</h3>
+          <p style="font-size:max(14px,1vw);opacity:.7;line-height:1.6">17 种惯性检测参数专业词库</p>
+        </div>
+        <div class="card-fill" style="padding:3vh 2vw">
+          <div class="t-meta" style="margin-bottom:1vh">06</div>
+          <h3 style="font-size:max(16px,1.2vw);font-weight:500;margin-bottom:1vh">Systemd 守护</h3>
+          <p style="font-size:max(14px,1vw);opacity:.7;line-height:1.6">24h 无故障运行，崩溃自动重启</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- P3: KPI S06 -->
+<section class="slide dark" data-layout="S06" data-animate="kpi-tower">
+  <div class="canvas-card">
+    <div class="chrome-min"><div class="l">惯导智衡</div><div class="r">03 / 10</div></div>
+    <div style="display:grid;grid-template-rows:auto 1fr;gap:3vh;flex:1">
+      <div>
+        <div class="t-cat" style="margin-bottom:1.2vh;color:rgba(255,255,255,.6)">KNOWLEDGE BASE</div>
+        <h2 class="h-xl" style="font-size:min(4.2vw,7.2vh);font-weight:200;color:#fff">知识库规模</h2>
+      </div>
+      <div style="display:flex;gap:4vw;align-items:end;justify-content:center;padding-bottom:4vh">
+        <div style="text-align:center">
+          <div style="width:6vw;height:28vh;background:var(--accent);display:flex;align-items:end;justify-content:center;padding-bottom:1.5vh">
+            <span style="font-family:var(--mono);font-size:max(12px,.8vw);color:var(--accent-on)">2314</span>
+          </div>
+          <p style="font-size:max(14px,1vw);margin-top:1.5vh;color:rgba(255,255,255,.7)">实体节点</p>
+        </div>
+        <div style="text-align:center">
+          <div style="width:6vw;height:18vh;background:var(--grey-2);display:flex;align-items:end;justify-content:center;padding-bottom:1.5vh">
+            <span style="font-family:var(--mono);font-size:max(12px,.8vw);color:var(--ink)">651</span>
+          </div>
+          <p style="font-size:max(14px,1vw);margin-top:1.5vh;color:rgba(255,255,255,.7)">知识关系</p>
+        </div>
+        <div style="text-align:center">
+          <div style="width:6vw;height:14vh;background:var(--grey-2);display:flex;align-items:end;justify-content:center;padding-bottom:1.5vh">
+            <span style="font-family:var(--mono);font-size:max(12px,.8vw);color:var(--ink)">322</span>
+          </div>
+          <p style="font-size:max(14px,1vw);margin-top:1.5vh;color:rgba(255,255,255,.7)">专业文档</p>
+        </div>
+        <div style="text-align:center">
+          <div style="width:6vw;height:10vh;background:var(--grey-2);display:flex;align-items:end;justify-content:center;padding-bottom:1.5vh">
+            <span style="font-family:var(--mono);font-size:max(12px,.8vw);color:var(--ink)">17</span>
+          </div>
+          <p style="font-size:max(14px,1vw);margin-top:1.5vh;color:rgba(255,255,255,.7)">检测参数</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- P4: 流程 S11 -->
+<section class="slide light" data-layout="S11" data-animate="timeline-h">
+  <div class="canvas-card">
+    <div class="chrome-min"><div class="l">惯导智衡</div><div class="r">04 / 10</div></div>
+    <div style="display:grid;grid-template-rows:auto 1fr;gap:3vh;flex:1">
+      <div>
+        <div class="t-cat" style="margin-bottom:1.2vh">AGENT WORKFLOW</div>
+        <h2 class="h-xl" style="font-size:min(4.2vw,7.2vh);font-weight:200">ReAct 执行流程</h2>
+      </div>
+      <div style="display:flex;align-items:center;gap:2vw;justify-content:center">
+        <div style="text-align:center;flex:1">
+          <div style="width:3vw;height:3vw;background:var(--accent);margin:0 auto 1.5vh"></div>
+          <p style="font-size:max(15px,1.1vw);font-weight:500">任务规划</p>
+          <p style="font-size:max(13px,.9vw);opacity:.6;margin-top:.5vh">分解复杂查询</p>
+        </div>
+        <div style="width:4vw;height:1px;background:var(--grey-2)"></div>
+        <div style="text-align:center;flex:1">
+          <div style="width:3vw;height:3vw;background:var(--accent);margin:0 auto 1.5vh"></div>
+          <p style="font-size:max(15px,1.1vw);font-weight:500">工具调用</p>
+          <p style="font-size:max(13px,.9vw);opacity:.6;margin-top:.5vh">RAG + 图谱查询</p>
+        </div>
+        <div style="width:4vw;height:1px;background:var(--grey-2)"></div>
+        <div style="text-align:center;flex:1">
+          <div style="width:3vw;height:3vw;background:var(--accent);margin:0 auto 1.5vh"></div>
+          <p style="font-size:max(15px,1.1vw);font-weight:500">结果验证</p>
+          <p style="font-size:max(13px,.9vw);opacity:.6;margin-top:.5vh">交叉校验答案</p>
+        </div>
+        <div style="width:4vw;height:1px;background:var(--grey-2)"></div>
+        <div style="text-align:center;flex:1">
+          <div style="width:3vw;height:3vw;background:var(--accent);margin:0 auto 1.5vh"></div>
+          <p style="font-size:max(15px,1.1vw);font-weight:500">报告生成</p>
+          <p style="font-size:max(13px,.9vw);opacity:.6;margin-top:.5vh">完整 CoT 输出</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SWISS_PLACEHOLDER_2 -->
+
+<!-- P5: 技术亮点 S19 -->
+<section class="slide dark" data-layout="S19" data-animate="grid-reveal">
+  <div class="canvas-card">
+    <div class="chrome-min"><div class="l">惯导智衡</div><div class="r">05 / 10</div></div>
+    <div style="display:grid;grid-template-rows:auto 1fr;gap:3vh;flex:1">
+      <div>
+        <div class="t-cat" style="margin-bottom:1.2vh;color:rgba(255,255,255,.6)">TECH HIGHLIGHTS</div>
+        <h2 class="h-xl" style="font-size:min(4.2vw,7.2vh);font-weight:200;color:#fff">技术亮点</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2.4vw;align-content:start">
+        <div class="card-fill" style="padding:3vh 2vw;background:rgba(255,255,255,.06)">
+          <h3 style="font-size:max(16px,1.2vw);font-weight:500;margin-bottom:1vh;color:#fff">领域知识图谱</h3>
+          <p style="font-size:max(14px,1vw);opacity:.7;line-height:1.6;color:rgba(255,255,255,.7)">17 种惯性检测参数、多维度实体关系建模</p>
+        </div>
+        <div class="card-fill" style="padding:3vh 2vw;background:rgba(255,255,255,.06)">
+          <h3 style="font-size:max(16px,1.2vw);font-weight:500;margin-bottom:1vh;color:#fff">全链路追踪</h3>
+          <p style="font-size:max(14px,1vw);opacity:.7;line-height:1.6;color:rgba(255,255,255,.7)">Correlation-ID 全链路追踪，每步可观测</p>
+        </div>
+        <div class="card-fill" style="padding:3vh 2vw;background:rgba(255,255,255,.06)">
+          <h3 style="font-size:max(16px,1.2vw);font-weight:500;margin-bottom:1vh;color:#fff">异步 ReAct</h3>
+          <p style="font-size:max(14px,1vw);opacity:.7;line-height:1.6;color:rgba(255,255,255,.7)">异步执行消除超时风险，支持任务取消/暂停/恢复</p>
+        </div>
+        <div class="card-accent" style="padding:3vh 2vw">
+          <h3 style="font-size:max(16px,1.2vw);font-weight:500;margin-bottom:1vh;color:var(--accent-on)">RAG 检索增强</h3>
+          <p style="font-size:max(14px,1vw);opacity:.9;line-height:1.6;color:var(--accent-on)">TF-IDF + BM25 双重排序，引用溯源到段落</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- P6: 评分对标 S07 -->
+<section class="slide light" data-layout="S07" data-animate="h-bar">
+  <div class="canvas-card">
+    <div class="chrome-min"><div class="l">惯导智衡</div><div class="r">06 / 10</div></div>
+    <div style="display:grid;grid-template-rows:auto 1fr;gap:3vh;flex:1">
+      <div>
+        <div class="t-cat" style="margin-bottom:1.2vh">SCORING DIMENSIONS</div>
+        <h2 class="h-xl" style="font-size:min(4.2vw,7.2vh);font-weight:200">官方评分对标</h2>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2.4vh;justify-content:center">
+        <div style="display:grid;grid-template-columns:8vw 1fr 3vw;gap:1.5vw;align-items:center">
+          <span style="font-size:max(14px,1vw);font-weight:500">Agent 执行</span>
+          <div style="height:2.4vh;background:var(--grey-1);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:60%;background:var(--accent)"></div></div>
+          <span class="t-meta">30分</span>
+        </div>
+        <div style="display:grid;grid-template-columns:8vw 1fr 3vw;gap:1.5vw;align-items:center">
+          <span style="font-size:max(14px,1vw);font-weight:500">文档理解</span>
+          <div style="height:2.4vh;background:var(--grey-1);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:40%;background:var(--accent)"></div></div>
+          <span class="t-meta">20分</span>
+        </div>
+        <div style="display:grid;grid-template-columns:8vw 1fr 3vw;gap:1.5vw;align-items:center">
+          <span style="font-size:max(14px,1vw);font-weight:500">系统稳定</span>
+          <div style="height:2.4vh;background:var(--grey-1);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:40%;background:var(--grey-3)"></div></div>
+          <span class="t-meta">20分</span>
+        </div>
+        <div style="display:grid;grid-template-columns:8vw 1fr 3vw;gap:1.5vw;align-items:center">
+          <span style="font-size:max(14px,1vw);font-weight:500">技术创新</span>
+          <div style="height:2.4vh;background:var(--grey-1);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:30%;background:var(--grey-3)"></div></div>
+          <span class="t-meta">15分</span>
+        </div>
+        <div style="display:grid;grid-template-columns:8vw 1fr 3vw;gap:1.5vw;align-items:center">
+          <span style="font-size:max(14px,1vw);font-weight:500">开源价值</span>
+          <div style="height:2.4vh;background:var(--grey-1);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:30%;background:var(--grey-3)"></div></div>
+          <span class="t-meta">15分</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- P7: 稳定性 S09 -->
+<section class="slide accent" data-layout="S09" data-animate="statement">
+  <div class="canvas-card">
+    <div class="chrome-min"><div class="l">惯导智衡</div><div class="r">07 / 10</div></div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:3vh">
+      <div class="t-meta" style="color:rgba(255,255,255,.6);letter-spacing:.22em">STABILITY</div>
+      <h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(7.4vw,12.8vh);font-weight:200;color:#fff;line-height:.94">24h · 10/10 · 0</h2>
+      <p style="font-size:max(16px,1.2vw);color:rgba(255,255,255,.75);max-width:44ch;line-height:1.6">连续运行 24 小时，接口全量测试 10/10 通过，零故障</p>
+    </div>
+  </div>
+</section>
+
+<!-- SWISS_PLACEHOLDER_3 -->
+
+<!-- P8: API S21 -->
+<section class="slide light" data-layout="S21" data-animate="grid-reveal">
+  <div class="canvas-card">
+    <div class="chrome-min"><div class="l">惯导智衡</div><div class="r">08 / 10</div></div>
+    <div style="display:grid;grid-template-rows:auto 1fr;gap:3vh;flex:1">
+      <div>
+        <div class="t-cat" style="margin-bottom:1.2vh">API SPEC</div>
+        <h2 class="h-xl" style="font-size:min(4.2vw,7.2vh);font-weight:200">RESTful 接口</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2vh 4vw;align-content:start">
+        <div style="padding:1.5vh 0;border-bottom:1px solid var(--grey-2);display:flex;gap:1vw;align-items:baseline">
+          <span class="t-meta" style="color:var(--accent)">POST</span>
+          <span style="font-family:var(--mono);font-size:max(14px,1vw)">/api/qa</span>
+        </div>
+        <div style="padding:1.5vh 0;border-bottom:1px solid var(--grey-2);display:flex;gap:1vw;align-items:baseline">
+          <span class="t-meta" style="color:var(--accent)">POST</span>
+          <span style="font-family:var(--mono);font-size:max(14px,1vw)">/api/agent/plan</span>
+        </div>
+        <div style="padding:1.5vh 0;border-bottom:1px solid var(--grey-2);display:flex;gap:1vw;align-items:baseline">
+          <span class="t-meta" style="color:var(--accent)">POST</span>
+          <span style="font-family:var(--mono);font-size:max(14px,1vw)">/api/agent/execute</span>
+        </div>
+        <div style="padding:1.5vh 0;border-bottom:1px solid var(--grey-2);display:flex;gap:1vw;align-items:baseline">
+          <span class="t-meta">GET</span>
+          <span style="font-family:var(--mono);font-size:max(14px,1vw)">/api/kg</span>
+        </div>
+        <div style="padding:1.5vh 0;border-bottom:1px solid var(--grey-2);display:flex;gap:1vw;align-items:baseline">
+          <span class="t-meta">GET</span>
+          <span style="font-family:var(--mono);font-size:max(14px,1vw)">/api/health</span>
+        </div>
+        <div style="padding:1.5vh 0;border-bottom:1px solid var(--grey-2);display:flex;gap:1vw;align-items:baseline">
+          <span class="t-meta">GET</span>
+          <span style="font-family:var(--mono);font-size:max(14px,1vw)">/api/tools</span>
+        </div>
+        <div style="padding:1.5vh 0;border-bottom:1px solid var(--grey-2);display:flex;gap:1vw;align-items:baseline">
+          <span class="t-meta" style="color:var(--accent)">POST</span>
+          <span style="font-family:var(--mono);font-size:max(14px,1vw)">/api/parse/batch</span>
+        </div>
+        <div style="padding:1.5vh 0;border-bottom:1px solid var(--grey-2);display:flex;gap:1vw;align-items:baseline">
+          <span class="t-meta">GET</span>
+          <span style="font-family:var(--mono);font-size:max(14px,1vw)">/api/readiness</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- P9: MinerU S03 -->
+<section class="slide dark" data-layout="S03" data-animate="split-statement">
+  <div class="canvas-card">
+    <div class="chrome-min"><div class="l">惯导智衡</div><div class="r">09 / 10</div></div>
+    <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:4vw;align-items:center">
+      <div>
+        <div class="t-cat" style="margin-bottom:1.2vh;color:rgba(255,255,255,.6)">MINERU PARSING</div>
+        <h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(5.2vw,9vh);font-weight:200;color:#fff;line-height:1.05">文档<br>解析</h2>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2vh">
+        <p style="font-size:max(16px,1.1vw);color:rgba(255,255,255,.8);line-height:1.7">• 300 份 PDF 检测报告全量解析</p>
+        <p style="font-size:max(16px,1.1vw);color:rgba(255,255,255,.8);line-height:1.7">• 单文档平均 30-50 秒完成</p>
+        <p style="font-size:max(16px,1.1vw);color:rgba(255,255,255,.8);line-height:1.7">• 复杂表格、公式精准提取</p>
+        <p style="font-size:max(16px,1.1vw);color:rgba(255,255,255,.8);line-height:1.7">• 云端 API，零本地算力依赖</p>
+        <p style="font-size:max(16px,1.1vw);color:rgba(255,255,255,.8);line-height:1.7">• 知识图谱自动构建</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- P10: 结束页 -->
+<section class="slide split" data-layout="SWISS-CLOSING-ASCII" data-animate="split-statement">
+  <div class="canvas-card">
+    <div class="split-half">
+      <div class="half b-accent" style="padding:5.6vh 3.6vw 4.4vh;justify-content:space-between;position:relative;overflow:hidden">
+        <canvas class="ascii-bg" aria-hidden="true"></canvas>
+        <div class="chrome-min" style="margin-bottom:0;position:relative;z-index:1">
+          <div class="l">10 / 10</div>
+          <div class="r">CLOSING</div>
+        </div>
+        <div data-anim="manifesto" style="display:flex;flex-direction:column;gap:2vh;position:relative;z-index:1">
+          <div class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em;margin-bottom:1.6vh">MANIFESTO</div>
+          <h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(6.4vw,11vh);line-height:.94;letter-spacing:-.025em;font-weight:200;color:#fff">惯导<span style="font-style:italic;font-weight:300">智衡</span></h2>
+          <div style="font-size:max(14px,1vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;max-width:36ch;margin-top:1.4vh">让 AI 理解惯性检测，让数据驱动决策</div>
+        </div>
+        <div style="border-top:1px solid rgba(255,255,255,.22);padding-top:2vh;position:relative;z-index:1">
+          <div class="t-meta" style="color:rgba(255,255,255,.6)">北京航天控制仪器研究所 · 2026</div>
+        </div>
+      </div>
+      <div class="half b-paper" style="padding:5.6vh 3.6vw 4.4vh;justify-content:center">
+        <div data-anim="takeaway" style="display:flex;flex-direction:column;gap:4vh">
+          <div style="border-left:3px solid var(--grey-2);padding-left:1.6vw">
+            <div class="t-meta" style="margin-bottom:.8vh">01</div>
+            <p style="font-size:max(16px,1.1vw);line-height:1.6;font-weight:400">MinerU VLM 解析 300+ 专业文档</p>
+          </div>
+          <div style="border-left:3px solid var(--grey-2);padding-left:1.6vw">
+            <div class="t-meta" style="margin-bottom:.8vh">02</div>
+            <p style="font-size:max(16px,1.1vw);line-height:1.6;font-weight:400">ReAct Agent 完整思维链执行</p>
+          </div>
+          <div style="border-left:3px solid var(--accent);padding-left:1.6vw">
+            <div class="t-meta" style="color:var(--accent);margin-bottom:.8vh">03</div>
+            <p style="font-size:max(16px,1.1vw);line-height:1.6;font-weight:400;color:var(--accent)">24h 稳定运行，零故障交付</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDES END -->
